@@ -1075,6 +1075,120 @@ async function integration() {
       assert.equal(list.items.length, 1); assert.equal(list.job.status, 'cancelled');
     });
 
+    await ta('C19 의뢰 분석(법독성): 등록·유형 검증, 분석 작업→우선순위·배치 결과, 수정 시 낡음 표시·한 번에 하나', async () => {
+      let r = await post('/api/cases', { action: 'add', title: '' }); assert.equal(r.status, 400);
+      const c1 = (await (await post('/api/cases', { action: 'add', title: '2026-성폭-001', type: 'dfsa_victim', samples: ['소변', '혈액'], symptoms: '술자리 후 기억 소실', elapsed: '약 20시간' })).json()).item;
+      assert.equal(c1.type, 'dfsa_victim'); assert.deepEqual(c1.samples, ['소변', '혈액']);
+      const c2 = (await (await post('/api/cases', { action: 'add', title: '독수리 집단 폐사', type: 'nope' })).json()).item;
+      assert.equal(c2.type, 'other', '모르는 유형은 기타');
+      let j = await (await post('/api/cases/analyze', { id: c1.id })).json(); const job = j.job.id;
+      r = await post('/api/cases/analyze', { id: c2.id }); assert.equal(r.status, 409, '한 번에 하나만');
+      const input = await (await fetch(`${api}/api/cases/input?job=${job}`)).json();
+      assert.equal(input.case.id, c1.id); assert.ok(input.guide.endsWith(path.join('skills', 'forensic-tox', 'SKILL.md')));
+      assert.ok(fs.existsSync(input.guide), '지침 파일이 있어야 한다');
+      r = await post('/api/cases/result', { job, priorities: [] }); assert.equal(r.status, 400, '우선순위가 비면 거절');
+      j = await (await post('/api/cases/result', { job, summary: '진정제 의심', priorities: [
+        { rank: 2, name: 'GHB', level: 'high', samples: ['소변'], extraction: 'LLE, BSTFA', instrument: 'GC-MS' },
+        { rank: 1, name: '졸피뎀', class: 'Z-drug', level: 'urgent', samples: ['소변'], instrument: 'LC-MS/MS' } ],
+        batches: [{ name: '배치 A', extraction: 'SPE', instrument: 'LC-MS/MS', items: ['졸피뎀'] }, { name: '빈 배치' }],
+        cautions: ['GHB 먼저'], questions: ['처방약'] })).json();
+      assert.deepEqual([j.priorities, j.batches], [2, 1]);
+      let list = await (await fetch(`${api}/api/cases`)).json();
+      const an = list.items.find((x) => x.id === c1.id).analysis;
+      assert.deepEqual(an.priorities.map((x) => x.name), ['졸피뎀', 'GHB'], 'rank 순'); assert.equal(an.priorities[0].level, 'mid', '모르는 level은 mid');
+      assert.equal(list.job.status, 'done');
+      await post('/api/cases', { action: 'update', id: c1.id, elapsed: '약 3일' });
+      list = await (await fetch(`${api}/api/cases`)).json();
+      assert.equal(list.items.find((x) => x.id === c1.id).analysis.stale, true, '의뢰가 바뀌면 다시 분석 필요');
+      j = await (await post('/api/cases/analyze', { id: c2.id })).json();
+      await post('/api/cases/fail', { job: j.job.id, reason: '정보 부족' });
+      list = await (await fetch(`${api}/api/cases`)).json(); assert.equal(list.job.status, 'failed');
+      await post('/api/cases', { action: 'remove', id: c2.id });
+      list = await (await fetch(`${api}/api/cases`)).json(); assert.equal(list.items.length, 1);
+
+      // 의뢰서 파일 → 입력칸 값(등록은 사람이): 업로드 폴더 밖 경로는 거절
+      r = await post('/api/cases/extract', { file: { name: 'x', path: '/etc/passwd' } }); assert.equal(r.status, 400, '업로드 폴더 밖 파일 거절');
+      const up = await (await post('/api/upload', { name: '의뢰서.pdf', data: Buffer.from('%PDF-1.4 test').toString('base64') })).json();
+      const ex = (await (await post('/api/cases/extract', { file: { name: up.name, path: up.path } })).json()).extract;
+      const exIn = await (await fetch(`${api}/api/cases/extract-input?job=${ex.id}`)).json(); assert.equal(exIn.file, up.path);
+      r = await post('/api/cases/extract-result', { job: ex.id, fields: {} }); assert.equal(r.status, 400, '제목·개요 둘 다 없으면 거절');
+      await post('/api/cases/extract-result', { job: ex.id, fields: { title: '2026-부검-9', type: 'autopsy', samples: ['대퇴혈(말초혈)'], symptoms: '축동' }, notes: ['경과 시간 없음'] });
+      list = await (await fetch(`${api}/api/cases`)).json();
+      const exDone = list.extracts.find((x) => x.id === ex.id);
+      assert.equal(exDone.status, 'done'); assert.equal(exDone.fields.type, 'autopsy'); assert.deepEqual(exDone.notes, ['경과 시간 없음']);
+      assert.equal(list.items.length, 1, '읽기만으로는 등록되지 않음');
+      const c3 = (await (await post('/api/cases', { action: 'add', ...exDone.fields, file: exDone.file })).json()).item;
+      assert.equal(c3.file.path, up.path, '등록하면 원본 파일이 의뢰에 붙는다');
+
+      // 실험 배치 → 할일·기기 일정(NodeRel): 메모 ─SPAWNED→ 할일 ─SCHEDULED_AS→ 일정, 주말 건너뜀
+      r = await post('/api/cases/plan', { id: c3.id, start: '2026-10-23' }); assert.equal(r.status, 400, '분석(배치) 없으면 거절');
+      const pl = (await (await post('/api/cases/plan', { id: c1.id, start: '2026-10-23', time: '10:00' })).json()).plan;   // 2026-10-23 = 금요일
+      assert.equal(pl.batches.length, 1); assert.equal(pl.batches[0].date, '2026-10-23');
+      r = await post('/api/cases/plan', { id: c1.id, start: '2026-10-23' }); assert.equal(r.status, 409, '두 번 만들지 않음');
+      const st = await (await fetch(`${api}/api/state`)).json();
+      const task = st.items.find((x) => x.id === pl.batches[0].taskId), ev = st.events.find((x) => x.id === pl.batches[0].eventId);
+      assert.ok(task && ev && st.notes.some((n) => n.id === pl.noteId)); assert.equal(ev.time, '10:00'); assert.equal(task.due, '2026-10-23');
+      const g = await (await fetch(`${api}/api/graph`)).json();
+      const has = (from, to, type) => JSON.stringify(g).includes(from) && (g.links || g.edges || []).some((l) => l.from === from && l.to === to && l.type === type);
+      assert.ok(has(pl.noteId, task.id, 'SPAWNED') && has(task.id, ev.id, 'SCHEDULED_AS'), JSON.stringify(g).slice(0, 300));
+      await post('/api/cases/plan', { id: c1.id, action: 'forget' });
+      list = await (await fetch(`${api}/api/cases`)).json(); assert.equal(list.items.find((x) => x.id === c1.id).plan, null);
+    });
+
+    await ta('C20 의뢰 묶음: 여러 파일·한 PDF 여러 건 → 초안 → 골라 등록/버리기, 여러 건 차례 분석, 배치 골라 만들고 지우기', async () => {
+      const upl = async (name) => (await (await post('/api/upload?for=case', { name, data: Buffer.from('%PDF-1.4 ' + name).toString('base64') })).json());
+      const f1 = await upl('묶음1.pdf'), f2 = await upl('묶음2.pdf');
+      const ex = (await (await post('/api/cases/extract', { files: [f1, f2].map((f) => ({ name: f.name, path: f.path })) })).json()).extract;
+      const exIn = await (await fetch(`${api}/api/cases/extract-input?job=${ex.id}`)).json(); assert.equal(exIn.files.length, 2);
+      let r = await post('/api/cases/extract-result', { job: ex.id, cases: [
+        { file: 0, pages: '1', fields: { title: 'A-1', type: 'autopsy', symptoms: '축동' } },
+        { file: 0, pages: '2', fields: { title: 'A-2', type: 'dfsa_victim', symptoms: '기억 소실' }, notes: ['경과 시간 없음'] },
+        { file: 1, pages: '1', fields: { title: '', symptoms: '접수번호가 흐림' } },
+        { file: 1, fields: {} } ] });
+      assert.equal((await r.json()).drafts, 3, '빈 초안은 버린다');
+      let list = await (await fetch(`${api}/api/cases`)).json();
+      const dx = list.extracts.find((x) => x.id === ex.id);
+      assert.equal(dx.drafts[2].fields.file.name, f2.name, '초안마다 원본 파일');
+      const before = list.items.length;
+      r = await post('/api/cases/drafts', { job: ex.id, action: 'register', picks: [2] }); assert.equal(r.status, 400, '제목 없는 초안은 일괄 등록 안 됨');
+      const reg = await (await post('/api/cases/drafts', { job: ex.id, action: 'register', picks: [0, 1] })).json();
+      assert.equal(reg.ids.length, 2);
+      // 폼에서 고쳐 등록하면 그 초안도 등록됨
+      const c3 = (await (await post('/api/cases', { action: 'add', title: 'B-1 (고침)', draft: { job: ex.id, i: 2 } })).json()).item;
+      list = await (await fetch(`${api}/api/cases`)).json();
+      assert.equal(list.items.length, before + 3);
+      assert.deepEqual(list.extracts.find((x) => x.id === ex.id).drafts.map((d) => d.status), ['registered', 'registered', 'registered']);
+      r = await post('/api/cases/drafts', { job: ex.id, action: 'drop' }); assert.equal(r.status, 400, '남은 초안 없음');
+
+      // 여러 건을 한 작업으로 — case를 지정해 한 건씩, 다 오면 완료
+      const ids = [...reg.ids, c3.id];
+      const j = (await (await post('/api/cases/analyze', { ids })).json()).job;
+      let inp = await (await fetch(`${api}/api/cases/input?job=${j.id}`)).json(); assert.equal(inp.cases.length, 3);
+      const res1 = { job: j.id, summary: 's', priorities: [{ name: '졸피뎀' }], batches: [{ name: 'A', instrument: 'LC-MS/MS' }, { name: 'B', instrument: 'GC-MS' }, { name: 'C', instrument: 'HS-GC-FID' }] };
+      r = await post('/api/cases/result', res1); assert.equal(r.status, 400, '여러 건이면 case 필수');
+      let out = await (await post('/api/cases/result', { ...res1, case: ids[0] })).json(); assert.deepEqual(out.remaining, ids.slice(1));
+      inp = await (await fetch(`${api}/api/cases/input?job=${j.id}`)).json(); assert.equal(inp.remaining, 2, '입력은 남은 의뢰만');
+      await post('/api/cases/result', { ...res1, case: ids[1] });
+      list = await (await fetch(`${api}/api/cases`)).json(); assert.equal(list.job.status, 'running');
+      await post('/api/cases/result', { ...res1, case: ids[2] });
+      list = await (await fetch(`${api}/api/cases`)).json(); assert.equal(list.job.status, 'done');
+
+      // 배치 골라 만들기 → 하나 지우기 → 전체 지우기 → 다시 만들 수 있음
+      r = await post('/api/cases/plan', { id: ids[0], start: '2026-10-26', pick: [] }); assert.equal(r.status, 400, '하나 이상 골라야');
+      let pl = (await (await post('/api/cases/plan', { id: ids[0], start: '2026-10-26', pick: [0, 2] })).json()).plan;
+      assert.deepEqual(pl.batches.map((b) => b.name), ['A', 'C']);
+      let st = await (await fetch(`${api}/api/state`)).json();
+      const note = st.notes.find((n) => n.id === pl.noteId); assert.ok(!note.text.includes('- 2026-10-27 B'), '뺀 배치는 메모에도 없음');
+      out = await (await post('/api/cases/plan', { id: ids[0], action: 'remove', taskId: pl.batches[0].taskId })).json();
+      assert.equal(out.removed, 2, '할일+일정'); assert.equal(out.plan.batches.length, 1);
+      st = await (await fetch(`${api}/api/state`)).json();
+      assert.ok(!st.items.some((x) => x.id === pl.batches[0].taskId) && !st.events.some((x) => x.id === pl.batches[0].eventId));
+      out = await (await post('/api/cases/plan', { id: ids[0], action: 'clear' })).json();
+      assert.equal(out.removed, 3, '남은 할일+일정+메모'); assert.equal(out.plan, null);
+      st = await (await fetch(`${api}/api/state`)).json(); assert.ok(!st.notes.some((n) => n.id === pl.noteId));
+      r = await post('/api/cases/plan', { id: ids[0], start: '2026-10-26' }); assert.equal(r.status, 200, '지운 뒤 다시 만들기');
+    });
+
     await ta('C15 요청(Requests): 에이전트 등록·중복 방지·kind 검증, 답변→answered, 완료/보류/재개', async () => {
       let r = await post('/api/requests', { requests: [{ kind: 'decision', title: 'Pick one', options: ['A', 'B'] }, { kind: 'access', title: 'Share calendar' }] });
       let j = await r.json(); assert.equal(j.added, 2);

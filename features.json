@@ -282,6 +282,27 @@
       ]
     },
     {
+      "id": "forensic-tox-cases",
+      "title": "의뢰 분석 — forensic toxicology case triage",
+      "skill": "forensic-tox",
+      "summary": "Workspace › 의뢰 분석 (first tab): enter a case (type: autopsy · drug-facilitated crime victim/suspect · compliance · animal death · plant death; samples; symptoms; meds; elapsed time). Analyze has the agent read skills/forensic-tox/SKILL.md and post a ranked list of substances to test, each with samples, targets, extraction and instrument, plus batches grouped by extraction/instrument, cautions and questions for the requester. Upload request forms (PDF/image/HWP; several files, or one PDF holding many requests, up to 40MB each): the agent splits them into drafts that a person reviews, drops or fixes, then registers in bulk (optionally analyzing them all in one job, posted case by case). Batches become tasks + instrument events linked from a case note (Note ─SPAWNED→ Task ─SCHEDULED_AS→ Event), with progress on the case card; pick batches before creating, delete one batch or the whole plan afterwards. Per workspace (cases.json next to state.json).",
+      "anchors": [
+        "/api/cases/analyze",
+        "/api/cases/result",
+        "casesView",
+        "function renderCases",
+        "function analyzeCase",
+        "CS_TYPES",
+        "/api/cases/extract",
+        "function csReadFile",
+        "/api/cases/plan",
+        "function csPlanHtml",
+        "/api/cases/drafts",
+        "function renderDrafts",
+        "CASE_UPLOAD"
+      ]
+    },
+    {
       "id": "agent-evolve",
       "title": "Evolve (agent → app proposals)",
       "skill": "agent-requests",

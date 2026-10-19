@@ -1104,6 +1104,72 @@ body.sys-mode .ws-combo { display: none; }
 .rqm-add-acts { display: flex; justify-content: flex-end; } .rqm-add-acts .ok, .rqm-edit .ok { height: 34px; padding: 0 14px; border-radius: 10px; background: var(--blue); color: var(--white); font-weight: 800; font-size: 13px; }
 .rqm-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 12px; } .rqm-sum { font-size: 12.5px; color: var(--text-weak); }
 .rqm-card { padding: 14px 16px; margin-bottom: 10px; }
+/* 의뢰 분석 */
+.cs-form { gap: 10px; }
+.cs-row { display: flex; gap: 10px; flex-wrap: wrap; } .cs-row > * { flex: 1 1 200px; min-width: 0; }
+.cs-f { display: grid; gap: 4px; } .cs-f > span { font-size: 12px; font-weight: 800; color: var(--text-weak); }
+.cs-f select { height: 40px; padding: 0 10px; border-radius: 10px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; border: 0; }
+.cs-form input:not([type=checkbox]), .cs-form textarea { border: 0; outline: none; } .cs-form input:not([type=checkbox]) { font-weight: 600; }
+.cs-form input:not([type=checkbox]):focus, .cs-form textarea:focus, .cs-f select:focus { box-shadow: 0 0 0 2px var(--acc-strong); outline: none; }
+.cs-hint { font-size: 12.5px; line-height: 1.5; color: var(--text-sub); background: var(--acc-weak); border-radius: 10px; padding: 8px 11px; }
+.cs-hint b { color: var(--acc-strong); }
+.cs-samples { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.cs-samples label { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 11px; border-radius: 999px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); font-size: 12.5px; font-weight: 700; color: var(--text-sub); cursor: pointer; user-select: none; }
+.cs-samples input { position: absolute; opacity: 0; pointer-events: none; }
+.cs-samples label:has(input:checked) { background: var(--acc-weak); color: var(--acc-strong); box-shadow: 0 0 0 1.5px var(--acc-strong); }
+.cs-samples label.sug:not(:has(input:checked))::after { content: "추천"; font-size: 10px; font-weight: 800; color: var(--acc-strong); }
+.cs-file { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 10px; border: 1.5px dashed var(--line); background: var(--surface); }
+.cs-file.drag { border-color: var(--acc-strong); background: var(--acc-weak); }
+.cs-file-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 13px; border-radius: 10px; background: var(--text); color: var(--bg); font-weight: 800; font-size: 13px; }
+.cs-file-btn svg { width: 16px; height: 16px; } .cs-file-btn:disabled { opacity: .5; }
+.cs-file-st { flex: 1 1 220px; min-width: 0; font-size: 12.5px; color: var(--text-sub); line-height: 1.5; overflow-wrap: anywhere; }
+.cs-file-st b { color: var(--text); } .cs-file-st .warn { color: var(--warm-fg); } .cs-file-st .err { color: var(--danger); }
+.cs-file-st button { margin-left: 6px; font-size: 12.5px; font-weight: 700; color: var(--blue); }
+.cs-file-st ul { margin: 4px 0 0; padding-left: 18px; }
+.cs-spin { display: inline-block; width: 11px; height: 11px; margin-right: 5px; border-radius: 99px; border: 2px solid currentColor; border-right-color: transparent; animation: sparkspin .9s linear infinite; vertical-align: -1px; }
+.cs-form .cs-auto { box-shadow: 0 0 0 2px color-mix(in srgb, var(--acc-strong) 55%, transparent) !important; }
+.cs-samples.cs-auto { box-shadow: none !important; } .cs-samples.cs-auto label:has(input:checked) { box-shadow: 0 0 0 2px var(--acc-strong); }
+.cs-meta a { color: var(--blue); font-weight: 700; }
+.cs-plan { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 13px; }
+.cs-plan h5 { margin: 0 0 6px; font-size: 11.5px; font-weight: 800; color: var(--text-weak); letter-spacing: .03em; display: flex; gap: 8px; align-items: baseline; }
+.cs-plan h5 .sp { flex: 1; } .cs-plan h5 button { font-size: 12px; font-weight: 700; color: var(--blue); letter-spacing: 0; }
+.cs-plan ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cs-plan li { display: flex; gap: 8px; align-items: baseline; } .cs-plan li .ck { font-weight: 900; color: var(--text-weak); } .cs-plan li.done .ck { color: var(--success); } .cs-plan li.done .nm { text-decoration: line-through; color: var(--text-weak); }
+.cs-plan li .dt { margin-left: auto; font-size: 12px; color: var(--text-weak); white-space: nowrap; }
+.cs-plan li .rm { flex: 0 0 auto; font-size: 11.5px; font-weight: 700; color: var(--text-weak); padding: 0 4px; } .cs-plan li .rm:hover, .cs-plan h5 .del { color: var(--danger); }
+.cs-pick { margin-bottom: 10px !important; } .cs-pick li { display: block; } .cs-pick label { width: 100%; box-sizing: border-box; display: flex; gap: 8px; align-items: flex-start; padding: 7px 9px; border-radius: 8px; background: var(--surface); box-shadow: 0 0 0 1px var(--line-2); cursor: pointer; }
+.cs-pick input { margin-top: 3px; } .cs-pick label:has(input:not(:checked)) { opacity: .5; } .cs-pick label:has(input:not(:checked)) b { text-decoration: line-through; }
+.cs-pick span { display: grid; gap: 1px; min-width: 0; } .cs-pick .fl { font-size: 12px; font-weight: 700; color: var(--acc-strong); overflow-wrap: anywhere; } .cs-pick .its { font-size: 12px; color: var(--text-sub); }
+.cs-plan-form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } .cs-plan-form input { height: 32px; padding: 0 8px; border-radius: 8px; border: 0; background: var(--surface); box-shadow: 0 0 0 1px var(--line); color: var(--text); font: inherit; font-size: 13px; }
+.cs-plan-form .ok { height: 32px; padding: 0 12px; border-radius: 8px; background: var(--blue); color: var(--white); font-weight: 800; font-size: 12.5px; } .cs-plan-form button:not(.ok) { font-size: 12.5px; font-weight: 700; color: var(--text-sub); }
+.cs-drafts { padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 0 0 2px var(--acc-strong), var(--sh-card); }
+.cs-dl { display: grid; gap: 6px; margin: 10px 0; }
+.cs-d { display: flex; gap: 10px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; background: var(--surface-2); cursor: pointer; }
+.cs-d input { margin-top: 4px; flex: 0 0 auto; } .cs-d:has(input:not(:checked)) .bd { opacity: .45; } .cs-d.bad { box-shadow: 0 0 0 1px var(--warm-fg); }
+.cs-d .bd { flex: 1; min-width: 0; display: grid; gap: 2px; } .cs-d .hd { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; } .cs-d .hd b { font-size: 14px; overflow-wrap: anywhere; }
+.cs-d .mt { font-size: 12px; color: var(--text-weak); } .cs-d .sy { font-size: 12.5px; color: var(--text-sub); } .cs-d .nt { font-size: 12px; color: var(--warm-fg); font-weight: 700; }
+.cs-d .ac { display: flex; flex-direction: column; gap: 4px; flex: 0 0 auto; } .cs-d .ac button { font-size: 12px; font-weight: 700; color: var(--blue); text-align: right; } .cs-d .ac button[data-da=drop1] { color: var(--text-weak); }
+.cs-dacts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .cs-dacts .sp { flex: 1; }
+.cs-dacts button { height: 34px; padding: 0 14px; border-radius: 10px; font-weight: 800; font-size: 13px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); color: var(--text-sub); }
+.cs-dacts .ok { background: var(--blue); color: var(--white); box-shadow: none; } .cs-dacts .ok2 { background: var(--text); color: var(--bg); box-shadow: none; } .cs-dacts button:disabled { opacity: .45; }
+@media (max-width: 560px) { .cs-d { flex-wrap: wrap; } .cs-d .ac { flex-direction: row; width: 100%; justify-content: flex-end; } }
+.cs-acts { gap: 8px; } .cs-acts button:not(.ok) { height: 34px; padding: 0 14px; border-radius: 10px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); font-weight: 700; font-size: 13px; color: var(--text-sub); }
+.cs-acts button[hidden] { display: none; }
+.cs-meta { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--text-weak); } .cs-meta b { color: var(--text-sub); font-weight: 700; }
+.cs-src { margin-top: 8px; font-size: 13px; color: var(--text-sub); } .cs-src summary { cursor: pointer; font-weight: 700; font-size: 12.5px; color: var(--text-weak); }
+.cs-src dl { margin: 6px 0 0; display: grid; gap: 6px; } .cs-src dt { font-size: 11.5px; font-weight: 800; color: var(--text-weak); } .cs-src dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cs-pri { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 8px; }
+.cs-pri li { padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--line-2); }
+.cs-pri .hd { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; } .cs-pri .rk { font-weight: 900; color: var(--text-weak); min-width: 1.4em; }
+.cs-pri .nm { font-weight: 800; font-size: 14.5px; } .cs-pri .cl { font-size: 12px; color: var(--text-weak); }
+.cs-lv { margin-left: auto; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.cs-lv.high { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); } .cs-lv.mid { background: var(--warm-bg); color: var(--warm-fg); } .cs-lv.low { background: var(--surface-2); color: var(--text-sub); }
+.cs-kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; margin-top: 6px; font-size: 13px; }
+.cs-kv dt { font-size: 11.5px; font-weight: 800; color: var(--text-weak); padding-top: 1px; } .cs-kv dd { margin: 0; overflow-wrap: anywhere; }
+.cs-kv dd.how { font-weight: 700; color: var(--text); }
+.cs-batch { display: grid; gap: 8px; margin-top: 4px; } .cs-batch > div { padding: 10px 12px; border-radius: 10px; background: var(--surface); box-shadow: 0 0 0 1px var(--line-2); font-size: 13px; }
+.cs-batch b { display: block; font-size: 13.5px; } .cs-batch .flow { margin: 3px 0; font-weight: 700; color: var(--acc-strong); } .cs-batch .its { color: var(--text-sub); }
+.rqm-an .cs-ul { font-family: inherit; font-size: 13px; }
 .rqm-top { display: flex; align-items: flex-start; gap: 8px; } .rqm-top .t { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; overflow-wrap: anywhere; } .rqm-top .n { font-size: 12px; color: var(--text-weak); white-space: nowrap; }
 .rqm-badge { flex: 0 0 auto; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; background: var(--surface-2); color: var(--text-sub); }
 .rqm-badge.reflected { background: var(--success-bg); color: var(--success); } .rqm-badge.partial { background: var(--warm-bg); color: var(--warm-fg); } .rqm-badge.missing { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
@@ -1248,68 +1314,101 @@ body.sys-mode .ws-combo { display: none; }
 
 <!-- ◀ 메인: 할일 / 일정 / 진화 -->
 <div id="main">
-  <nav class="topnav" aria-label="Main menu" role="tablist">
+  <nav class="topnav" aria-label="메인 메뉴" role="tablist">
     <div class="topnav-brand"><img src="/ana-logo.png" alt="ANA logo"><span class="bname">ANA</span></div>
     <!-- 영역 전환(PC) — 모바일에서는 하단 메뉴(.bottomnav)가 같은 일을 한다 -->
-    <div class="seg modeseg" role="tablist" aria-label="Area">
-      <button data-area="ws" class="on" role="tab">Workspace</button><button data-area="collab" role="tab">Collaborate<span class="tbadge" data-collabbadge>0</span></button><button data-area="sys" role="tab">System<span class="tbadge" data-sysbadge>0</span></button>
+    <div class="seg modeseg" role="tablist" aria-label="영역">
+      <button data-area="ws" class="on" role="tab">워크스페이스</button><button data-area="collab" role="tab">협업<span class="tbadge" data-collabbadge>0</span></button><button data-area="sys" role="tab">시스템<span class="tbadge" data-sysbadge>0</span></button>
     </div>
     <div class="ws-combo" id="wsCombo">
-      <button class="ws-btn" id="wsBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="Workspace">
+      <button class="ws-btn" id="wsBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="워크스페이스">
         <span class="wsn" id="wsName">Base Workspace</span><span class="caret">▼</span></button>
       <div class="ws-menu" id="wsMenu" hidden>
-        <div class="ws-label">Workspace</div>
-        <div class="ws-list" id="wsList" role="listbox" aria-label="Workspaces"></div>
-        <button class="ws-add" id="wsAddBtn">＋ Add workspace</button>
+        <div class="ws-label">워크스페이스</div>
+        <div class="ws-list" id="wsList" role="listbox" aria-label="워크스페이스 목록"></div>
+        <button class="ws-add" id="wsAddBtn">＋ 워크스페이스 추가</button>
         <form class="ws-new" id="wsNew" hidden>
-          <input id="wsNewName" maxlength="60" placeholder="Workspace name" autocomplete="off" aria-label="New workspace name">
-          <button type="submit">Add</button>
+          <input id="wsNewName" maxlength="60" placeholder="워크스페이스 이름" autocomplete="off" aria-label="새 워크스페이스 이름">
+          <button type="submit">추가</button>
         </form>
         <div class="ws-err" id="wsErr" hidden></div>
       </div>
     </div>
     <div class="tabstrip">
-      <button class="tab on" data-view="todo" data-group="ws" role="tab" aria-selected="true">Tasks</button>
-      <button class="tab" data-view="schedule" data-group="ws" role="tab" aria-selected="false">Calendar</button>
-      <button class="tab" data-view="memo" data-group="ws" role="tab" aria-selected="false">Notes</button>
-      <button class="tab" data-view="evolve" data-group="collab" role="tab" aria-selected="false">Evolve<span class="tbadge" id="evoBadge">0</span></button>
-      <button class="tab" data-view="approvals" data-group="collab" role="tab" aria-selected="false">Approvals<span class="tbadge" id="apprBadge">0</span></button>
-      <button class="tab" data-view="requests" data-group="collab" role="tab" aria-selected="false">Requests<span class="tbadge" id="reqBadge">0</span></button>
-      <button class="tab" data-view="requirements" data-group="collab" role="tab" aria-selected="false">Requirements</button>
-      <button class="tab" data-view="files" data-group="sys" role="tab" aria-selected="false">Files</button>
-      <button class="tab" data-view="stats" data-group="sys" role="tab" aria-selected="false">Stats</button>
-      <button class="tab" data-view="relations" data-group="sys" role="tab" aria-selected="false">Relations</button>
-      <button class="tab" data-view="reliability" data-group="sys" role="tab" aria-selected="false">Trustworthiness</button>
-      <button class="tab" data-view="safety" data-group="sys" role="tab" aria-selected="false">Safety</button>
-      <button class="tab" data-view="security" data-group="sys" role="tab" aria-selected="false">Security</button>
-      <button class="tab" data-view="update" data-group="sys" role="tab" aria-selected="false">Update<span class="tbadge" id="updBadge">0</span></button>
+      <button class="tab on" data-view="cases" data-group="ws" role="tab" aria-selected="true">의뢰 분석</button>
+      <button class="tab" data-view="todo" data-group="ws" role="tab" aria-selected="false">할일</button>
+      <button class="tab" data-view="schedule" data-group="ws" role="tab" aria-selected="false">일정</button>
+      <button class="tab" data-view="memo" data-group="ws" role="tab" aria-selected="false">메모</button>
+      <button class="tab" data-view="evolve" data-group="collab" role="tab" aria-selected="false">진화<span class="tbadge" id="evoBadge">0</span></button>
+      <button class="tab" data-view="approvals" data-group="collab" role="tab" aria-selected="false">승인<span class="tbadge" id="apprBadge">0</span></button>
+      <button class="tab" data-view="requests" data-group="collab" role="tab" aria-selected="false">요청<span class="tbadge" id="reqBadge">0</span></button>
+      <button class="tab" data-view="requirements" data-group="collab" role="tab" aria-selected="false">요구사항</button>
+      <button class="tab" data-view="files" data-group="sys" role="tab" aria-selected="false">파일</button>
+      <button class="tab" data-view="stats" data-group="sys" role="tab" aria-selected="false">통계</button>
+      <button class="tab" data-view="relations" data-group="sys" role="tab" aria-selected="false">관계</button>
+      <button class="tab" data-view="reliability" data-group="sys" role="tab" aria-selected="false">신뢰성</button>
+      <button class="tab" data-view="safety" data-group="sys" role="tab" aria-selected="false">안전</button>
+      <button class="tab" data-view="security" data-group="sys" role="tab" aria-selected="false">보안</button>
+      <button class="tab" data-view="update" data-group="sys" role="tab" aria-selected="false">업데이트<span class="tbadge" id="updBadge">0</span></button>
     </div>
-    <button id="modeToggle" class="mode-toggle" role="switch" aria-checked="false" aria-label="Chip mode">
-      <span class="knob"></span>Chip
+    <button id="modeToggle" class="mode-toggle" role="switch" aria-checked="false" aria-label="칩 모드">
+      <span class="knob"></span>칩
     </button>
-    <button id="drawBtn" class="chip-scan draw-btn" aria-label="Draw on the screen and attach it to the chat" title="Draw on the screen — circle what you mean">
+    <button id="drawBtn" class="chip-scan draw-btn" aria-label="화면에 그려서 채팅에 첨부" title="화면에 그리기 — 가리키는 곳에 동그라미를 치세요">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
     </button>
-    <button id="chipScanBtn" class="chip-scan" aria-label="Find and register elements that can't be picked as chips yet" title="Register unpickable elements as chips">
+    <button id="chipScanBtn" class="chip-scan" aria-label="아직 칩으로 선택할 수 없는 요소를 찾아 등록" title="선택할 수 없는 요소를 칩으로 등록">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg>
     </button>
-    <button id="meBtn" class="avatar-btn" aria-label="My profile" aria-haspopup="menu"><span class="av">?</span></button>
+    <button id="meBtn" class="avatar-btn" aria-label="내 프로필" aria-haspopup="menu"><span class="av">?</span></button>
   </nav>
   <div class="me-menu" id="meMenu" role="menu" hidden>
     <button id="menuEditInfo" role="menuitem">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Edit My Info</button>
+      내 정보 수정</button>
     <button id="menuSettings" role="menuitem">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Settings</button>
+      설정</button>
     <div class="mm-sep" role="separator"></div>
     <button id="menuLogout" role="menuitem">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      <span>Log out<span class="mm-hint" id="menuLogoutHint" hidden></span></span></button>
+      <span>로그아웃<span class="mm-hint" id="menuLogoutHint" hidden></span></span></button>
   </div>
 
+  <!-- 워크스페이스 › 의뢰 분석(법독성): 의뢰 내용·임상증상 → 검사할 약독물 우선순위 + 추출법·기기 제안(skills/forensic-tox) -->
+  <section class="view on" id="casesView" role="tabpanel"><div class="wrap">
+    <div class="evo-head"><span class="evo-lead">의뢰서 내용과 임상증상을 적으면 에이전트가 검사할 약독물의 우선순위를 정하고, 물질마다 추출법과 분석 기기를 제안해요. 실험 계획을 돕는 참고 자료이며 최종 판단은 감정 책임자가 합니다.</span></div>
+    <form class="card rqm-add cs-form" id="csForm" autocomplete="off">
+      <div class="cs-file" id="csFileBar">
+        <button type="button" class="cs-file-btn" id="csFileBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3-3 3 3"/></svg>의뢰서 파일로 채우기</button>
+        <div class="cs-file-st" id="csFileSt">PDF·사진·HWP 의뢰서를 올리거나 여기로 끌어다 놓으면 에이전트가 읽고 아래 칸을 채워요. 확인한 뒤 등록하세요.</div>
+        <input type="file" id="csFileIn" accept=".pdf,.hwp,.hwpx,.txt,.docx,image/*" multiple hidden>
+      </div>
+      <div class="cs-row">
+        <label class="cs-f grow"><span>접수번호 · 사건명</span><input id="csTitle" maxlength="200" placeholder="예: 2026-부검-0123 / ○○서 성폭력 의뢰"></label>
+        <label class="cs-f"><span>의뢰 유형</span><select id="csType"></select></label>
+      </div>
+      <div class="cs-hint" id="csHint"></div>
+      <div class="cs-f"><span>시료</span><div class="cs-samples" id="csSamples"></div>
+        <input id="csSampleEtc" maxlength="200" placeholder="그 밖의 시료 (쉼표로 구분) — 예: 음료잔, 주사기"></div>
+      <label class="cs-f"><span>사건 개요 · 임상증상 · 부검 소견</span><textarea id="csSymptoms" rows="5" maxlength="8000" placeholder="의뢰서 내용을 그대로 붙여넣어도 돼요. 예: 술자리 후 기억이 끊기고 다음 날 낯선 곳에서 깨어남, 어지럼·구토"></textarea></label>
+      <div class="cs-row">
+        <label class="cs-f grow"><span>복용 · 처방 약물</span><input id="csMeds" maxlength="2000" placeholder="예: 클로자핀 200 mg 1일 2회 / 모름"></label>
+        <label class="cs-f grow"><span>사건부터 시료 채취까지</span><input id="csElapsed" maxlength="200" placeholder="예: 약 20시간 / 사망 추정 2일"></label>
+      </div>
+      <label class="cs-f"><span>기타 (나이·성별·기저질환·현장 단서)</span><textarea id="csExtra" rows="2" maxlength="4000" placeholder="예: 40대 남성, 현장에 빈 약봉지와 농약병"></textarea></label>
+      <div class="rqm-add-acts cs-acts"><button type="button" id="csCancelEdit" hidden>취소</button><button type="button" id="csSaveOnly">저장만</button><button type="submit" class="ok" id="csSubmit">등록하고 분석</button></div>
+    </form>
+    <div id="csDrafts" hidden></div>
+    <div class="card ana-card" id="csJob" hidden></div>
+    <div class="rqm-bar" id="csBar" hidden><button class="ana-btn" id="csAnalyzeAll">분석</button><span class="rqm-sum" id="csSum"></span></div>
+    <div class="stseg" id="csFilter" role="tablist" aria-label="의뢰 유형"></div>
+    <div id="csList"></div>
+    <div class="empty" id="csEmpty"></div>
+  </div></section>
+
   <!-- 할일 -->
-  <section class="view on" id="todoView" role="tabpanel"><div class="wrap">
+  <section class="view" id="todoView" role="tabpanel"><div class="wrap">
     <div class="kpis">
       <div class="kpi card total"><div class="n" id="kTotal">0</div><div class="l">Total</div></div>
       <div class="kpi card open"><div class="n" id="kOpen">0</div><div class="l">Open</div></div>
@@ -1556,10 +1655,10 @@ body.sys-mode .ws-combo { display: none; }
   </div>
 </div>
 <!-- 하단 메뉴(모바일): Workspace = 할일·일정·메모 / System = 통계·요청·진화·관계 -->
-<nav class="bottomnav" aria-label="Area">
-  <button data-area="ws" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Workspace</button>
-  <button data-area="collab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Collaborate<span class="tbadge" data-collabbadge>0</span></button>
-  <button data-area="sys"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>System<span class="tbadge" data-sysbadge>0</span></button>
+<nav class="bottomnav" aria-label="영역">
+  <button data-area="ws" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>워크스페이스</button>
+  <button data-area="collab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>협업<span class="tbadge" data-collabbadge>0</span></button>
+  <button data-area="sys"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>시스템<span class="tbadge" data-sysbadge>0</span></button>
 </nav>
 <!-- 모델 선택 시트(Claude Code 세션) — Claude 앱과 같은 모양 -->
 <div class="limit-pop" id="limitPop" role="status" hidden></div>
@@ -1687,6 +1786,7 @@ async function refreshData() {
   (s.proposals || []).forEach((p) => proposals.set(p.id, p)); renderApprovals();
   renderTodos(); renderCalendar(); renderDay(); renderUpcoming(); renderMemos();
   if ($('relationsView').classList.contains('on')) renderRelations();
+  if ($('casesView').classList.contains('on')) refreshCases();   // 의뢰도 워크스페이스마다 따로 — 워크스페이스를 바꾸면 다시 읽는다
   refreshPropCards();
 }
 
@@ -2308,6 +2408,296 @@ $('rqmList').addEventListener('click', async (e) => {
 });
 setInterval(() => { if (!document.hidden && rqmCache.job && rqmCache.job.status === 'running' && $('requirementsView').classList.contains('on')) renderRequirements(); }, 1000);
 
+/* ---- 워크스페이스 › 의뢰 분석(법독성) ---- 의뢰 내용·임상증상 → 검사할 약독물 우선순위 + 물질별 추출법·기기(근거: skills/forensic-tox/SKILL.md) */
+const CS_TYPES = {
+  autopsy: { label: '부검 — 사인 규명', samples: ['대퇴혈(말초혈)', '심장혈', '소변', '위내용물', '유리체액', '간'],
+    hint: '<b>기본:</b> 알코올 + 약물 일반 스크리닝은 늘 함께. 정량은 말초혈(대퇴혈) 우선 — 심장혈은 사후 재분포로 높게 나올 수 있어요. 현장 단서(약봉지·농약병·번개탄·가스통)를 꼭 적어 주세요.' },
+  dfsa_victim: { label: '약물 범죄 — 피해자 (성범죄·절도 등)', samples: ['소변', '혈액', '모발'],
+    hint: '<b>피해자는 진정·수면 유도 약물</b>을 봐요 — 졸피뎀, 벤조디아제핀, GHB, 항히스타민. 저농도라 고감도 LC-MS/MS가 필요하고, GHB는 반나절이면 사라지니 경과 시간을 꼭 적어 주세요. 신고가 늦었으면 모발(사건 4~6주 후)을 고려해요.' },
+  dfsa_suspect: { label: '약물 범죄 — 피의자', samples: ['소변', '모발', '압수물·증거물'],
+    hint: '<b>피의자는 불법 마약류</b>를 봐요 — 메스암페타민, MDMA, 대마, 코카인, 아편류·펜타닐, 케타민. 피해자에게 쓴 진정제를 소지·복용했는지(압수물·모발)도 함께 확인해요.' },
+  compliance: { label: '법무시료 — 복약 확인', samples: ['혈액', '소변'],
+    hint: '<b>처방약의 모체와 대사체</b>를 함께 봐요(예: 클로자핀/노르클로자핀, 메타돈/EDDP). 소변에 모체만 있고 대사체가 없으면 시료 첨가를 의심해요. 처방 약물·용량·마지막 복용 시각이 필요해요.' },
+  animal: { label: '동물 폐사', samples: ['위내용물', '간', '신장', '사료·미끼'],
+    hint: '<b>독살 미끼</b>가 흔해요 — 카보퓨란·메소밀 등 카바메이트, 유기인계, 항응고 살서제, 스트리키닌. 야생조류 집단 폐사는 감염병(조류인플루엔자) 배제가 먼저예요.' },
+  plant: { label: '식물 고사', samples: ['식물체', '토양'],
+    hint: '<b>증상으로 제초제 계열을 좁혀요</b> — 잎 뒤틀림은 호르몬형(2,4-D·디캄바), 급속 갈변은 파라콰트·글루포시네이트, 서서히 황화는 글리포세이트. 고사 부위와 건전 부위(대조)를 함께 채취해요.' },
+  other: { label: '기타', samples: [], hint: '사건 개요와 증상을 자세히 적어 주세요. 에이전트가 의뢰 유형부터 판단해요.' },
+};
+const CS_SAMPLES = ['대퇴혈(말초혈)', '심장혈', '혈액', '소변', '위내용물', '유리체액', '간', '신장', '담즙', '모발', '폐·기도 가스', '압수물·증거물', '사료·미끼', '식물체', '토양', '물'];
+const CS_LEVEL = { high: '먼저', mid: '이어서', low: '감별' };
+const csShort = (k) => (CS_TYPES[k] || CS_TYPES.other).label.split(' — ')[0] + (k === 'dfsa_victim' ? '·피해자' : k === 'dfsa_suspect' ? '·피의자' : '');   // 배지·필터용 짧은 이름
+let csCache = { items: [], job: null, extracts: [] }, csFilterKey = 'all', csEditing = 0, csAttach = null, csExtractId = 0, csPlanOpen = 0;
+$('csType').innerHTML = Object.entries(CS_TYPES).map(([k, v]) => `<option value="${k}">${escapeHtml(v.label)}</option>`).join('');
+$('csSamples').innerHTML = CS_SAMPLES.map((x) => `<label><input type="checkbox" value="${escapeHtml(x)}">${escapeHtml(x)}</label>`).join('');
+function csTypeChanged() {
+  const t = CS_TYPES[$('csType').value] || CS_TYPES.other;
+  $('csHint').innerHTML = t.hint;
+  $('csSamples').querySelectorAll('label').forEach((l) => l.classList.toggle('sug', t.samples.includes(l.querySelector('input').value)));
+}
+$('csType').onchange = csTypeChanged; csTypeChanged();
+function csFormData() {
+  const samples = [...$('csSamples').querySelectorAll('input:checked')].map((x) => x.value)
+    .concat($('csSampleEtc').value.split(/[,，、]/).map((x) => x.trim()).filter(Boolean));
+  return { title: $('csTitle').value.trim(), type: $('csType').value, samples, symptoms: $('csSymptoms').value.trim(),
+    meds: $('csMeds').value.trim(), elapsed: $('csElapsed').value.trim(), extra: $('csExtra').value.trim(), file: csAttach };
+}
+function csFill(c) {
+  $('csTitle').value = c ? c.title : ''; $('csType').value = c ? c.type : 'autopsy';
+  const ss = c ? c.samples || [] : [];
+  $('csSamples').querySelectorAll('input').forEach((x) => { x.checked = ss.includes(x.value); });
+  $('csSampleEtc').value = ss.filter((x) => !CS_SAMPLES.includes(x)).join(', ');
+  $('csSymptoms').value = c ? c.symptoms || '' : ''; $('csMeds').value = c ? c.meds || '' : '';
+  $('csElapsed').value = c ? c.elapsed || '' : ''; $('csExtra').value = c ? c.extra || '' : '';
+  csEditing = c ? c.id : 0; $('csCancelEdit').hidden = !c; csAttach = c ? c.file || null : null; csDraft = null; if (c) csKeep(0); csAutoClear(); csFileStatus();
+  $('csSubmit').textContent = c ? '수정하고 다시 분석' : '등록하고 분석'; $('csSaveOnly').textContent = c ? '수정만' : '저장만';
+  csTypeChanged();
+}
+async function refreshCases() { try { csCache = await getJSON('/api/cases'); } catch { return; } renderCases(); csExtractCheck(); }
+
+/* 의뢰서 파일 → 입력칸: 올리기(/api/upload) → 읽기 작업(/api/cases/extract) → 에이전트가 값을 올리면 칸만 채운다(등록은 사람이) */
+const csKeep = (id) => { csExtractId = id; try { id ? localStorage.setItem('ana-cs-extract', String(id)) : localStorage.removeItem('ana-cs-extract'); } catch {} };
+try { csExtractId = Number(localStorage.getItem('ana-cs-extract')) || 0; } catch {}
+const CS_AUTO = ['csTitle', 'csType', 'csSamples', 'csSampleEtc', 'csSymptoms', 'csMeds', 'csElapsed', 'csExtra'];
+function csAutoClear() { CS_AUTO.forEach((id) => $(id).classList.remove('cs-auto')); }
+CS_AUTO.forEach((id) => $(id).addEventListener(id === 'csSamples' || id === 'csType' ? 'change' : 'input', () => $(id).classList.remove('cs-auto')));
+const CS_MAX_UPLOAD = 40 * 1024 * 1024;   // 의뢰서 묶음(스캔 PDF) — 서버 /api/upload?for=case 한도와 같게
+let csDraft = null;   // 폼에 불러온 초안 {job, i} — 등록하면 그 초안은 '등록됨'
+const csFilesOf = (ex) => ex.files || [ex.file];
+const csFilesLabel = (ex) => { const fs = csFilesOf(ex); return fs.length > 1 ? `${fs[0].name} 외 ${fs.length - 1}개` : fs[0].name; };
+function csFileStatus(html) {
+  const ex = csExtractId && (csCache.extracts || []).find((x) => x.id === csExtractId);
+  $('csFileBtn').disabled = !!(ex && ex.status === 'running');
+  if (html !== undefined) { $('csFileSt').innerHTML = html; return; }
+  if (ex && ex.status === 'running') {
+    $('csFileSt').innerHTML = `<span class="cs-spin"></span><b>${escapeHtml(csFilesLabel(ex))}</b> 읽는 중 — 에이전트가 의뢰서를 한 건씩 정리하고 있어요 <button type="button" data-x="chat">채팅 보기</button><button type="button" data-x="cancel">취소</button>`;
+  } else if (csAttach) $('csFileSt').innerHTML = `의뢰서 <b>${escapeHtml(csAttach.name)}</b> 첨부됨 — 등록하면 의뢰와 함께 저장돼요 <button type="button" data-x="drop">빼기</button>`;
+  else $('csFileSt').textContent = 'PDF·사진·HWP 의뢰서를 올리거나 끌어다 놓으세요. 여러 파일이나, 의뢰서 여러 건이 묶인 PDF도 한 번에 정리해요. 확인한 뒤 등록하세요.';
+}
+$('csFileSt').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-x]'); if (!b) return;
+  if (b.dataset.x === 'chat') openChat();
+  if (b.dataset.x === 'cancel') { await post('/api/cases/extract-cancel', { job: csExtractId }).catch(() => {}); csKeep(0); csAttach = null; refreshCases(); csFileStatus(); }
+  if (b.dataset.x === 'drop') { csAttach = null; csDraft = null; csFileStatus(); }
+});
+function csFillDraft(f, notes, from, draft) {
+  csFill(null);
+  const set = (id, v) => { if (v) { $(id).value = v; $(id).classList.add('cs-auto'); } };
+  set('csTitle', f.title); set('csSymptoms', f.symptoms); set('csMeds', f.meds); set('csElapsed', f.elapsed); set('csExtra', f.extra);
+  if (f.type && CS_TYPES[f.type]) { $('csType').value = f.type; $('csType').classList.add('cs-auto'); csTypeChanged(); }
+  if ((f.samples || []).length) {
+    $('csSamples').querySelectorAll('input').forEach((x) => { x.checked = f.samples.includes(x.value); });
+    const etc = f.samples.filter((x) => !CS_SAMPLES.includes(x)); $('csSamples').classList.add('cs-auto');
+    if (etc.length) { $('csSampleEtc').value = etc.join(', '); $('csSampleEtc').classList.add('cs-auto'); }
+  }
+  csAttach = f.file || null; csDraft = draft || null;
+  csFileStatus(`<b>${escapeHtml(from)}</b>에서 채웠어요 — 테두리 표시된 칸을 확인하고 등록하세요.${(notes || []).length ? `<ul class="warn">${notes.map((n) => `<li>${escapeHtml(n)}</li>`).join('')}</ul>` : ''}`);
+  $('csFileBtn').disabled = false;
+  $('csForm').scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+function csExtractCheck() {
+  renderDrafts();
+  if (!csExtractId) return;
+  const ex = (csCache.extracts || []).find((x) => x.id === csExtractId); if (!ex) { csKeep(0); return; }
+  if (ex.status === 'running') { csFileStatus(); return; }
+  csKeep(0); $('csFileBtn').disabled = false;
+  if (ex.status !== 'done') { csFileStatus(`<span class="err">✗ ${escapeHtml(csFilesLabel(ex))}을(를) 읽지 못했어요${ex.reason ? ` — ${escapeHtml(ex.reason)}` : ''}</span>`); csAttach = null; return; }
+  const ds = ex.drafts || [{ i: 0, fields: { ...ex.fields, file: ex.file }, notes: ex.notes, status: 'draft' }];
+  // 파일 하나에 의뢰 하나면 폼을 바로 채우고, 여러 건이면 아래 '정리된 의뢰서' 목록에서 훑어보고 고른다
+  if (ds.length === 1) { csFillDraft(ds[0].fields, ds[0].notes, csFilesLabel(ex), ex.drafts ? { job: ex.id, i: 0 } : null); return; }
+  csFileStatus(`<b>${escapeHtml(csFilesLabel(ex))}</b>에서 의뢰 <b>${ds.length}건</b>을 정리했어요 — 아래 목록을 훑어보고 필요 없는 건 빼고 등록하세요.`);
+  $('csDrafts').scrollIntoView({ block: 'start', behavior: 'smooth' });
+}
+// 정리된 초안 목록 — 등록·버리기 전까지 남아 있다(새로 고쳐도, 다른 사람이 봐도 같다)
+function renderDrafts() {
+  const exs = (csCache.extracts || []).filter((x) => x.status === 'done' && (x.drafts || []).length > 1 && x.drafts.some((d) => d.status === 'draft'));
+  $('csDrafts').hidden = !exs.length; if (!exs.length) { $('csDrafts').innerHTML = ''; return; }
+  const keep = new Set([...$('csDrafts').querySelectorAll('input[data-d]:not(:checked)')].map((x) => x.dataset.d));   // 다시 그려도 끈 체크는 유지
+  $('csDrafts').innerHTML = exs.slice().reverse().map((ex) => {
+    const ds = ex.drafts.filter((d) => d.status === 'draft'), reg = ex.drafts.filter((d) => d.status === 'registered').length;
+    return `<div class="card cs-drafts" data-job="${ex.id}"><div class="ana-top"><b>정리된 의뢰서 ${ds.length}건</b><span class="sub">${escapeHtml(csFilesLabel(ex))}${reg ? ` · ${reg}건 등록됨` : ''}</span></div>
+      <div class="cs-dl">${ds.map((d) => { const f = d.fields, key = `${ex.id}:${d.i}`, noTitle = !f.title;
+        return `<label class="cs-d${noTitle ? ' bad' : ''}"><input type="checkbox" data-d="${key}" ${keep.has(key) || noTitle ? '' : 'checked'}${noTitle ? ' disabled' : ''}>
+          <span class="bd"><span class="hd"><b>${escapeHtml(f.title || '(접수번호·사건명 없음)')}</b><span class="rqm-badge">${escapeHtml(csShort(f.type))}</span></span>
+          <span class="mt">${escapeHtml([(f.samples || []).join(', '), f.elapsed && '경과 ' + f.elapsed, f.file && (f.file.name + (d.pages ? ' p.' + d.pages : ''))].filter(Boolean).join(' · '))}</span>
+          ${f.symptoms ? `<span class="sy">${escapeHtml(f.symptoms.length > 140 ? f.symptoms.slice(0, 140) + '…' : f.symptoms)}</span>` : ''}
+          ${d.notes.length ? `<span class="nt">확인: ${escapeHtml(d.notes.join(' / '))}</span>` : ''}</span>
+          <span class="ac"><button type="button" data-da="edit" data-i="${d.i}">폼에서 고치기</button><button type="button" data-da="drop1" data-i="${d.i}">버리기</button></span></label>`; }).join('')}</div>
+      <div class="cs-dacts"><button type="button" class="ok" data-da="reg">선택한 <span data-n></span>건 등록</button><button type="button" class="ok2" data-da="regan">등록하고 모두 분석</button><span class="sp"></span><button type="button" data-da="dropall">남은 초안 모두 버리기</button></div></div>`;
+  }).join('');
+  csDraftCount();
+}
+function csDraftCount() { $('csDrafts').querySelectorAll('.cs-drafts').forEach((c) => { const n = c.querySelectorAll('input[data-d]:checked').length; c.querySelector('[data-n]').textContent = n; c.querySelectorAll('[data-da=reg],[data-da=regan]').forEach((b) => { b.disabled = !n; }); }); }
+$('csDrafts').addEventListener('change', csDraftCount);
+$('csDrafts').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-da]'); if (!b) return; e.preventDefault();
+  const card = b.closest('.cs-drafts'), job = Number(card.dataset.job), ex = csCache.extracts.find((x) => x.id === job); if (!ex) return;
+  const a = b.dataset.da, i = Number(b.dataset.i);
+  if (a === 'edit') { const d = ex.drafts.find((x) => x.i === i); csFillDraft(d.fields, d.notes, `${d.fields.file ? d.fields.file.name : '의뢰서'}${d.pages ? ' p.' + d.pages : ''}`, { job, i }); return; }
+  const picks = a === 'drop1' ? [i] : a === 'dropall' ? ex.drafts.filter((d) => d.status === 'draft').map((d) => d.i)
+    : [...card.querySelectorAll('input[data-d]:checked')].map((x) => Number(x.dataset.d.split(':')[1]));
+  if (a === 'dropall' && !(await confirmAsk({ title: `남은 초안 ${picks.length}건을 버릴까요?`, body: '등록하지 않은 초안을 목록에서 지워요. 올린 파일은 남아요.', yes: '버리기' }))) return;
+  const r = await post('/api/cases/drafts', { job, picks, action: a.startsWith('drop') ? 'drop' : 'register' }).catch(() => null); const d = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { showErr(d.error || '처리하지 못했어요'); return; }
+  if (d.ids) toast(`${d.ids.length}건을 등록했어요`);
+  await refreshCases();
+  if (a === 'regan' && d.ids) analyzeCase(d.ids);
+});
+async function csReadFiles(list) {
+  const files = Array.from(list || []); if (!files.length) return;
+  const big = files.find((f) => f.size > CS_MAX_UPLOAD); if (big) { showErr(`${big.name}: ${fmtSize(big.size)} — 40MB를 넘어요`); return; }
+  if ((csCache.extracts || []).some((x) => x.id === csExtractId && x.status === 'running')) { showErr('지금 읽고 있는 의뢰서가 있어요'); return; }
+  $('csFileBtn').disabled = true; const ups = [];
+  for (const [k, f] of files.entries()) {
+    csFileStatus(`<span class="cs-spin"></span><b>${escapeHtml(f.name)}</b> 올리는 중…${files.length > 1 ? ` (${k + 1}/${files.length})` : ''}`);
+    try { const r = await post('/api/upload?for=case', { name: f.name, type: f.type || '', data: await readAsBase64(f) }); const up = await r.json(); if (!r.ok) throw new Error(up.error || r.status); ups.push({ name: up.name, path: up.path }); }
+    catch (e) { $('csFileBtn').disabled = false; csFileStatus(`<span class="err">✗ ${escapeHtml(f.name)}을(를) 올리지 못했어요 — ${escapeHtml(e.message)}</span>`); return; }
+  }
+  const r = await post('/api/cases/extract', { files: ups }).catch(() => null);
+  const d = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { $('csFileBtn').disabled = false; csFileStatus(`<span class="err">✗ ${escapeHtml(d.error || '읽기를 시작하지 못했어요')}</span>`); return; }
+  csKeep(d.extract.id); (csCache.extracts = csCache.extracts || []).push(d.extract); csFileStatus();
+  const h = agentHost, job = d.extract.id, ws = encodeURIComponent(currentWs || '');
+  const text = `[의뢰서 읽기] 올라온 법독성 의뢰서 파일 ${ups.length}개를 읽고, 의뢰 한 건마다 입력칸에 넣을 값을 정리해 주세요. 등록은 사람이 확인한 뒤에 하니 값만 보내 주세요.
+1) 파일 정보: curl -s "http://${h}/api/cases/extract-input?job=${job}&ws=${ws}" → files[]의 경로를 모두 읽으세요. PDF·이미지는 파일 읽기 도구로 직접 보고(PDF가 10쪽을 넘으면 pages로 나눠 읽기), .hwpx는 unzip -p로 Contents/section*.xml의 글자를 뽑고, .hwp는 hwp5txt 등이 있으면 쓰세요. 읽을 수 없는 파일은 notes에 적고 나머지는 계속하세요. 전부 읽을 수 없으면 아래 fail로 "PDF로 저장해서 다시 올려 주세요"라고 알려 주세요.
+   한 PDF에 의뢰서가 여러 건 묶여 있을 수 있어요 — 문서번호·접수번호·대상자가 바뀌는 곳에서 나눠 한 건씩 만드세요. 진행 중에는 채팅에 "n건째 정리 중" 정도만 짧게 적으세요.
+2) 결과 올리기(한 번에): curl -s -X POST "http://${h}/api/cases/extract-result?ws=${ws}" -H 'content-type: application/json' --data-binary @cases.json
+   cases.json = {"job":${job},"cases":[{"file":<files[]의 index>,"pages":"3-4","fields":{"title":"접수번호 · 의뢰기관/사건명","type":"autopsy|dfsa_victim|dfsa_suspect|compliance|animal|plant|other","samples":["시료"],"symptoms":"사건 개요·임상증상·부검 소견 — 의뢰서 문장을 살려서","meds":"복용·처방 약물","elapsed":"사건부터 채취까지 시간","extra":"나이·성별·기저질환·현장 단서·의뢰 항목"},"notes":["의뢰서에서 흐리거나 없어서 사람이 확인할 것"]}]}
+   type: 부검 사인 규명=autopsy, 약물 범죄 피해자=dfsa_victim, 피의자=dfsa_suspect, 법무시료 복약 확인=compliance, 동물 폐사=animal, 식물 고사=plant. samples는 가능하면 이 이름을 쓰세요: ${CS_SAMPLES.join(', ')}.
+   의뢰서 순서대로 넣고, 없는 값은 비워 두고 추측하지 마세요. 주민등록번호·연락처 같은 식별정보는 옮기지 마세요. 끝내지 못하면: curl -s -X POST "http://${h}/api/cases/extract-fail?ws=${ws}" -H 'content-type: application/json' -d '{"job":${job},"reason":"이유"}'`;
+  post('/api/chat', { text, force: true }).then((x) => { if (!x.ok) x.json().then((e) => showErr(e.error || '에이전트에게 보내지 못했어요')).catch(() => {}); }).catch(() => showErr('에이전트에게 보내지 못했어요'));
+}
+$('csFileBtn').onclick = () => $('csFileIn').click();
+$('csFileIn').addEventListener('change', () => { csReadFiles($('csFileIn').files); $('csFileIn').value = ''; });
+['dragenter', 'dragover'].forEach((t) => $('csForm').addEventListener(t, (e) => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { e.preventDefault(); $('csFileBar').classList.add('drag'); } }));
+['dragleave', 'drop'].forEach((t) => $('csForm').addEventListener(t, () => $('csFileBar').classList.remove('drag')));
+$('csForm').addEventListener('drop', (e) => { const fs = e.dataTransfer?.files; if (!fs || !fs.length) return; e.preventDefault(); csReadFiles(fs); });
+function renderCases() {
+  const items = csCache.items || [], j = csCache.job, running = j && j.status === 'running';
+  const cnt = { all: items.length }; items.forEach((x) => { cnt[x.type] = (cnt[x.type] || 0) + 1; });
+  const F = [['all', '전체']].concat(Object.keys(CS_TYPES).filter((k) => cnt[k]).map((k) => [k, csShort(k)]));
+  if (!F.some(([k]) => k === csFilterKey)) csFilterKey = 'all';
+  $('csFilter').innerHTML = F.map(([k, l]) => `<button role="tab" data-k="${k}" class="${csFilterKey === k ? 'on' : ''}" aria-selected="${csFilterKey === k}">${escapeHtml(l)}<span class="n">${cnt[k] || 0}</span></button>`).join('');
+  $('csFilter').hidden = items.length < 2;
+  // 진행 카드
+  const card = $('csJob'), jc = j && items.find((x) => x.id === j.caseId);
+  if (j && (running || j.status === 'failed')) {
+    card.hidden = false;
+    if (running) {
+      const staleJ = Date.now() - Date.parse(j.updatedAt) > 180000;
+      const n = (j.caseIds || [j.caseId]).length, nd = (j.done || []).length;
+      card.innerHTML = `<div class="ana-top"><b>${n > 1 ? `${n}건 분석 중 — ${nd}건 완료` : `분석 중 — ${escapeHtml(jc ? jc.title : '#' + j.caseId)}`}</b><span class="sub">${ago(j.at)}</span></div>
+        <div class="ana-bar${j.progress ? '' : ' indet'}"><i style="width:${j.progress}%"></i></div><div class="ana-step">${j.progress ? j.progress + '% · ' : ''}${escapeHtml(j.step || '진행 중')}</div>
+        ${staleJ ? '<div class="ana-warn">에이전트 응답이 3분 넘게 없어요 — 채팅을 확인해 주세요.</div>' : ''}<div class="ana-acts"><button id="csChat">채팅 열기</button><button id="csCancel">취소</button></div>`;
+      $('csChat').onclick = () => openChat();
+      $('csCancel').onclick = async () => { await post('/api/cases/cancel', { job: j.id }).catch(() => {}); refreshCases(); };
+    } else card.innerHTML = `<div class="ana-top"><b>분석 실패 — ${escapeHtml(jc ? jc.title : '#' + j.caseId)}</b></div><div class="fail-why">✗ ${escapeHtml(j.step || '실패')}</div>`;
+  } else card.hidden = true;
+  const todo = items.filter((x) => !x.analysis || x.analysis.stale);
+  $('csBar').hidden = !todo.length; $('csAnalyzeAll').disabled = !!running;
+  $('csAnalyzeAll').textContent = running ? '분석 중…' : `분석 안 된 ${todo.length}건 분석`;
+  $('csSum').textContent = `의뢰 ${items.length}건 · 분석 완료 ${items.length - todo.length}건`;
+  const list = items.filter((x) => csFilterKey === 'all' || x.type === csFilterKey).slice().reverse();
+  const ul = (xs) => `<ul class="cs-ul">${xs.map((e) => `<li>${escapeHtml(e)}</li>`).join('')}</ul>`;
+  $('csList').innerHTML = list.map((x) => {
+    const a = x.analysis, t = CS_TYPES[x.type] || CS_TYPES.other, mine = running && (j.caseIds || [j.caseId]).includes(x.id) && !(j.done || []).includes(x.id);
+    const src = [['사건 개요 · 임상증상', x.symptoms], ['복용 · 처방 약물', x.meds], ['기타', x.extra]].filter(([, v]) => v);
+    return `<div class="card rqm-card" data-cid="${x.id}"><div class="rqm-top"><span class="t">${escapeHtml(x.title)}</span>
+      <span class="rqm-badge ${a ? 'reflected' : ''}" title="${escapeHtml(t.label)}">${escapeHtml(csShort(x.type))}</span><span class="n">#${x.id}</span></div>
+      <div class="cs-meta">${(x.samples || []).length ? `<span><b>시료</b> ${escapeHtml(x.samples.join(', '))}</span>` : ''}${x.elapsed ? `<span><b>경과</b> ${escapeHtml(x.elapsed)}</span>` : ''}${x.file ? `<span><b>의뢰서</b> <a href="/uploads/${encodeURIComponent(x.file.path.split(/[\\/]/).pop())}" target="_blank" rel="noopener">${escapeHtml(x.file.name)}</a></span>` : ''}<span>${escapeHtml(fmtWhen(x.at))}</span></div>
+      ${src.length ? `<details class="cs-src"${a ? '' : ' open'}><summary>의뢰 내용</summary><dl>${src.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl></details>` : ''}
+      ${a ? `<div class="rqm-an">${a.summary ? `<h5>요약</h5><p>${escapeHtml(a.summary)}</p>` : ''}
+        <h5>검사 우선순위</h5><ol class="cs-pri">${a.priorities.map((q) => `<li><div class="hd"><span class="rk">${q.rank}</span><span class="nm">${escapeHtml(q.name)}</span>${q.class ? `<span class="cl">${escapeHtml(q.class)}</span>` : ''}<span class="cs-lv ${q.level}">${CS_LEVEL[q.level] || ''}</span></div>
+          <dl class="cs-kv">${(q.extraction || q.instrument) ? `<dt>방법</dt><dd class="how">${escapeHtml([q.extraction, q.instrument].filter(Boolean).join(' → '))}</dd>` : ''}
+          ${q.samples.length ? `<dt>시료</dt><dd>${escapeHtml(q.samples.join(', '))}</dd>` : ''}${q.targets ? `<dt>대상</dt><dd>${escapeHtml(q.targets)}</dd>` : ''}
+          ${q.window ? `<dt>검출 시간</dt><dd>${escapeHtml(q.window)}</dd>` : ''}${q.why ? `<dt>근거</dt><dd>${escapeHtml(q.why)}</dd>` : ''}</dl></li>`).join('')}</ol>
+        ${(a.batches || []).length ? `<h5>실험 배치 (같은 추출·기기로 묶음)</h5><div class="cs-batch">${a.batches.map((b) => `<div><b>${escapeHtml(b.name || '배치')}</b><div class="flow">${escapeHtml([b.sample, b.extraction, b.instrument].filter(Boolean).join(' → '))}</div>${b.items.length ? `<div class="its">${escapeHtml(b.items.join(', '))}</div>` : ''}</div>`).join('')}</div>` : ''}
+        ${(a.cautions || []).length ? `<h5>주의사항</h5>${ul(a.cautions)}` : ''}
+        ${(a.questions || []).length ? `<h5>의뢰처에 더 확인할 것</h5>${ul(a.questions)}` : ''}
+        <div class="meta">분석 ${escapeHtml(fmtWhen(a.at))} · 참고용 — 최종 판단은 감정 책임자${a.stale ? ' · <span class="stale">의뢰 내용이 바뀌었어요 — 다시 분석하세요</span>' : ''}</div></div>` : ''}
+      ${csPlanHtml(x)}
+      <div class="rqm-acts"><button data-a="one"${mine ? ' disabled' : ''}>${mine ? '분석 중…' : a ? '다시 분석' : '분석'}</button>${a && (a.batches || []).length && !x.plan && csPlanOpen !== x.id ? '<button data-a="plan">할일·일정 만들기</button>' : ''}<button data-a="talk">상담</button><button data-a="edit">수정</button><button data-a="del">삭제</button></div></div>`;
+  }).join('');
+  $('csEmpty').textContent = !items.length ? '아직 의뢰가 없어요 — 위에 의뢰 내용을 적고 "등록하고 분석"을 누르세요' : '이 유형의 의뢰가 없어요';
+  $('csEmpty').style.display = list.length ? 'none' : 'block';
+}
+$('csAnalyzeAll').onclick = () => { const ids = (csCache.items || []).filter((x) => !x.analysis || x.analysis.stale).map((x) => x.id); if (ids.length) analyzeCase(ids); };
+$('csFilter').addEventListener('click', (e) => { const b = e.target.closest('button[data-k]'); if (!b) return; csFilterKey = b.dataset.k; renderCases(); });
+// 실험 배치 → 할일·기기 일정. 진행은 할일 완료 표시로 본다(할일 탭에서 체크하면 여기도 바뀜)
+function csNextWorkday() { const d = new Date(); do d.setDate(d.getDate() + 1); while (!(d.getDay() % 6)); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+function csPlanHtml(x) {
+  const bs = (x.analysis && x.analysis.batches) || [];
+  if (x.plan) {
+    const rows = x.plan.batches.map((b) => { const t = items.find((i) => i.id === b.taskId); return { ...b, gone: !t, done: !!(t && t.done) }; });
+    const n = rows.filter((r) => r.done).length;
+    return `<div class="cs-plan"><h5>실험 진행 ${n}/${rows.length}<span class="sp"></span><button data-a="note">작업지시 메모</button><button data-a="cal">일정 보기</button><button data-a="clearplan" class="del">계획 전체 지우기</button></h5><ul>${rows.map((r) => `<li class="${r.done ? 'done' : ''}"><span class="ck">${r.done ? '✓' : r.gone ? '–' : '○'}</span><span class="nm">${escapeHtml(r.name || '배치')}${r.gone ? ' (할일 삭제됨)' : ''}</span><span class="dt">${escapeHtml(r.date)}</span><button class="rm" data-a="rmbatch" data-t="${escapeHtml(r.taskId)}" title="이 배치의 할일과 일정 지우기" aria-label="${escapeHtml(r.name || '배치')} 지우기">지우기</button></li>`).join('')}</ul></div>`;
+  }
+  if (csPlanOpen === x.id && bs.length) return `<div class="cs-plan"><h5>필요 없는 배치는 체크를 끄세요 — 고른 배치만 할일과 기기 일정으로 만들어요(근무일 하루에 한 배치씩)</h5>
+    <ul class="cs-pick">${bs.map((b, i) => `<li><label><input type="checkbox" data-pick="${i}" checked><span><b>${escapeHtml(b.name || '배치 ' + (i + 1))}</b><span class="fl">${escapeHtml([b.sample, b.extraction, b.instrument].filter(Boolean).join(' → '))}</span>${b.items.length ? `<span class="its">${escapeHtml(b.items.join(', '))}</span>` : ''}</span></label></li>`).join('')}</ul>
+    <div class="cs-plan-form"><label>시작일 <input type="date" data-f="start" value="${csNextWorkday()}"></label><label>시각 <input type="time" data-f="time" value="09:00"></label><button class="ok" data-a="mkplan">만들기</button><button data-a="noplan">취소</button></div></div>`;
+  return '';
+}
+async function csSave(analyze) {
+  const d = csFormData(); if (!d.title) { showErr('접수번호나 사건명을 적어 주세요'); $('csTitle').focus(); return; }
+  if (analyze && !d.symptoms && !d.extra) { showErr('사건 개요나 임상증상을 적어야 분석할 수 있어요'); $('csSymptoms').focus(); return; }
+  const r = await post('/api/cases', csEditing ? { action: 'update', id: csEditing, ...d } : { action: 'add', ...d, draft: csDraft }).catch(() => null);
+  const out = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { showErr(out.error || '저장하지 못했어요'); return; }
+  csFill(null); await refreshCases();
+  if (analyze) analyzeCase(out.item.id);
+}
+$('csForm').addEventListener('submit', (e) => { e.preventDefault(); csSave(true); });
+$('csSaveOnly').onclick = () => csSave(false);
+$('csCancelEdit').onclick = () => csFill(null);
+async function analyzeCase(id) {
+  const ids = Array.isArray(id) ? id : [id], many = ids.length > 1;
+  let r; try { r = await post('/api/cases/analyze', { ids }); } catch { r = null; }
+  const d = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { showErr(d.error || '분석을 시작하지 못했어요'); return; }
+  csCache.job = d.job; renderCases();
+  const h = agentHost, job = d.job.id, ws = encodeURIComponent(currentWs || '');
+  const text = `[의뢰 분석] 법독성 의뢰 ${many ? `${ids.length}건(#${ids.join(', #')})을 한 건씩 차례로` : `#${ids[0]}를`} 보고 검사할 약독물의 우선순위를 정하고, 물질마다 추출법과 분석 기기를 제안해 주세요.${many ? ' 응답의 cases[]가 남은 의뢰예요 — 한 건 끝날 때마다 바로 결과를 올리세요(결과에 "case":<의뢰 id>를 꼭 넣기).' : ''}
+1) 의뢰 읽기: curl -s "http://${h}/api/cases/input?job=${job}&ws=${ws}" — 응답의 guide 파일(skills/forensic-tox/SKILL.md)을 먼저 읽고 그 순서(의뢰 유형 → 증상·toxidrome → 경과 시간 → 시료 → 우선순위 → 추출·기기·배치)대로 판단하세요. 피해자/피의자처럼 유형에 따라 볼 약물이 다르다는 점에 주의하세요. case.file이 있으면 의뢰서 원본도 함께 보세요.
+2) 진행 보고(0–99): curl -s -X POST "http://${h}/api/cases/progress?ws=${ws}" -H 'content-type: application/json' -d '{"job":${job},"progress":40,"step":"증상으로 계열 좁히는 중"}'
+3) 결과 올리기: curl -s -X POST "http://${h}/api/cases/result?ws=${ws}" -H 'content-type: application/json' --data-binary @result.json
+   result.json = {"job":${job},${many ? '"case":<의뢰 id>,' : ''}"summary":"2~4문장","priorities":[{"rank":1,"name":"물질","class":"계열","level":"high|mid|low","why":"증상·정황·시간 근거","samples":["소변"],"targets":"모체 + 대사체","extraction":"전처리·추출","instrument":"기기","window":"검출 가능 시간"}],"batches":[{"name":"배치 A — …","sample":"소변","extraction":"…","instrument":"…","items":["…"]}],"cautions":["…"],"questions":["의뢰처에 더 확인할 정보"]}
+   모든 텍스트는 한국어로 쓰세요. 분석하는 동안 아무것도 바꾸지 마세요. 끝내지 못하면: curl -s -X POST "http://${h}/api/cases/fail?ws=${ws}" -H 'content-type: application/json' -d '{"job":${job},"reason":"이유"}'`;
+  post('/api/chat', { text, force: true }).then((x) => { if (!x.ok) x.json().then((e) => showErr(e.error || '에이전트에게 보내지 못했어요')).catch(() => {}); }).catch(() => showErr('에이전트에게 보내지 못했어요'));
+}
+$('csList').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-a]'), card = e.target.closest('.rqm-card'); if (!b || !card) return;
+  const id = Number(card.dataset.cid), it = csCache.items.find((x) => x.id === id); if (!it) return;
+  const a = b.dataset.a;
+  if (a === 'edit') { csFill(it); $('csForm').scrollIntoView({ block: 'start', behavior: 'smooth' }); $('csTitle').focus({ preventScroll: true }); return; }
+  if (a === 'del') { if (!(await confirmDelete(`의뢰 "${it.title}"`))) return; await post('/api/cases', { action: 'remove', id }).catch(() => {}); if (csEditing === id) csFill(null); refreshCases(); return; }
+  if (a === 'plan') { csPlanOpen = id; renderCases(); return; }
+  if (a === 'noplan') { csPlanOpen = 0; renderCases(); return; }
+  if (a === 'mkplan') {
+    const start = card.querySelector('[data-f=start]').value, time = card.querySelector('[data-f=time]').value || '09:00';
+    const pick = [...card.querySelectorAll('[data-pick]')].filter((x) => x.checked).map((x) => Number(x.dataset.pick));
+    if (!pick.length) { showErr('배치를 하나 이상 고르세요'); return; }
+    const r = await post('/api/cases/plan', { id, start, time, pick }).catch(() => null); const d = r ? await r.json().catch(() => ({})) : {};
+    if (!r || !r.ok) { showErr(d.error || '할일·일정을 만들지 못했어요'); return; }
+    csPlanOpen = 0; toast(`할일 ${d.plan.batches.length}개와 기기 일정을 만들었어요`); await refreshData(); refreshCases(); return;
+  }
+  if (a === 'note' && it.plan) { gotoNode(it.plan.noteId); return; }
+  if ((a === 'rmbatch' || a === 'clearplan') && it.plan) {
+    const one = a === 'rmbatch' && it.plan.batches.find((x) => x.taskId === b.dataset.t);
+    const done = (one ? [one] : it.plan.batches).filter((x) => (items.find((i) => i.id === x.taskId) || {}).done).length;
+    const ok = await confirmAsk(one
+      ? { title: `"${one.name || '배치'}"를 지울까요?`, body: `이 배치의 할일과 기기 일정(${one.date})을 지워요.${done ? ' 이미 완료로 표시된 할일이에요.' : ''} 되돌릴 수 없어요.`, yes: '지우기' }
+      : { title: '계획을 모두 지울까요?', body: `할일 ${it.plan.batches.length}개, 기기 일정 ${it.plan.batches.length}개, 작업지시 메모를 지워요.${done ? ` 완료된 할일 ${done}개도 함께 지워져요.` : ''} 지운 뒤에는 계획을 다시 만들 수 있어요. 되돌릴 수 없어요.`, yes: '모두 지우기' });
+    if (!ok) return;
+    const r = await post('/api/cases/plan', one ? { id, action: 'remove', taskId: one.taskId } : { id, action: 'clear' }).catch(() => null); const d = r ? await r.json().catch(() => ({})) : {};
+    if (!r || !r.ok) { showErr(d.error || '지우지 못했어요'); return; }
+    toast(one ? `"${one.name || '배치'}"를 지웠어요` : '계획을 모두 지웠어요'); await refreshData(); refreshCases(); return;
+  }
+  if (a === 'cal' && it.plan) { setAppMode('ws', 'schedule'); gotoDate(it.plan.batches[0].date); return; }
+  if (a === 'talk') { addChip('의뢰', `#${id} ${it.title}`); openChat(); setTimeout(() => $('input').focus(), 60); return; }
+  if (a === 'one') { if (csCache.job && csCache.job.status === 'running') { showErr('다른 의뢰를 분석하고 있어요 — 끝난 뒤에 다시 눌러 주세요'); return; } analyzeCase(id); }
+});
+setInterval(() => { if (!document.hidden && csCache.job && csCache.job.status === 'running' && $('casesView').classList.contains('on')) renderCases(); }, 1000);
+
 /* ---- 시스템 › Update ---- 업스트림과 비교한 항목을 다섯 상태로. Update는 에이전트에게 이식을 맡긴다 */
 let updCache = { items: [], lastCheck: null, upstreamDir: '' };
 async function refreshUpdates() {
@@ -2457,7 +2847,7 @@ async function loadMe() {
   // 프로필 메뉴의 로그아웃: 앞단 로그아웃 경로가 있을 때만 활성. 없으면 이유를 보여 주고 비활성.
   $('menuLogout').disabled = !logoutUrl;
   $('menuLogoutHint').hidden = !!logoutUrl;
-  $('menuLogoutHint').textContent = signedIn ? 'Set ANA_LOGOUT_URL to enable' : 'Single-user mode — no sign-in';
+  $('menuLogoutHint').textContent = signedIn ? 'ANA_LOGOUT_URL을 설정하면 사용할 수 있어요' : '단일 사용자 모드 — 로그인 없음';
   renderTodos(); renderMemos(); renderUpcoming();
 }
 /* 아바타 클릭 → 드롭다운 메뉴(Edit My Info / Settings) */
@@ -2911,7 +3301,7 @@ $('filesInput').onchange = async () => {
 /* ================= 탭 전환 ================= */
 // 영역(Workspace / System)마다 마지막으로 본 탭을 기억한다
 let appMode = 'ws';
-const lastTab = { ws: 'todo', collab: 'evolve', sys: 'stats' };
+const lastTab = { ws: 'cases', collab: 'evolve', sys: 'stats' };
 const AREAS = ['ws', 'collab', 'sys'];
 try { const m = localStorage.getItem('ana-area'); if (AREAS.includes(m)) appMode = m; const t = JSON.parse(localStorage.getItem('ana-area-tabs') || '{}'); Object.assign(lastTab, t); } catch {}
 // 탭 선택은 click()이 아니라 이 함수로 — 클릭 처리 중인 버튼에 다시 click()을 부르면 브라우저가 무시한다
@@ -2919,7 +3309,7 @@ function selectTab(b) {
     if (b.dataset.group && b.dataset.group !== appMode) applyArea(b.dataset.group);
     if ($('memoView').classList.contains('on') && b.dataset.view !== 'memo') cleanupEmptyMemos(); // 메모 탭 이탈 시 빈 메모 정리(진화 #3)
     document.querySelectorAll('.topnav .tab').forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); });
-    ['todo', 'schedule', 'memo', 'evolve', 'approvals', 'requests', 'requirements', 'stats', 'relations', 'reliability', 'safety', 'security', 'update', 'files'].forEach((v) => $(v + 'View').classList.toggle('on', b.dataset.view === v));
+    ['cases', 'todo', 'schedule', 'memo', 'evolve', 'approvals', 'requests', 'requirements', 'stats', 'relations', 'reliability', 'safety', 'security', 'update', 'files'].forEach((v) => $(v + 'View').classList.toggle('on', b.dataset.view === v));
     lastTab[appMode] = b.dataset.view;
     revealTab(b);
     try { localStorage.setItem('ana-area-tabs', JSON.stringify(lastTab)); } catch {}
@@ -2928,6 +3318,7 @@ function selectTab(b) {
     if (['reliability', 'safety', 'security'].includes(b.dataset.view)) refreshTrust();
     if (b.dataset.view === 'update') refreshUpdates();
     if (b.dataset.view === 'requirements') refreshRequirements();
+    if (b.dataset.view === 'cases') refreshCases();
     if (b.dataset.view === 'files') loadFiles(filesPath);
     if (b.dataset.view === 'stats') renderStats();
     if (b.dataset.view === 'relations') renderRelations();
@@ -3871,6 +4262,7 @@ function connect() {
       case 'requests': refreshRequests(); break;
       case 'updates': refreshUpdates(); break;
       case 'requirements': if ($('requirementsView').classList.contains('on')) refreshRequirements(); break;
+      case 'cases': if ($('casesView').classList.contains('on')) refreshCases(); break;
       case 'analysis': if ($('relationsView').classList.contains('on')) refreshAnalysis(); break;
     }
   };

@@ -102,7 +102,8 @@ function createDashboardApi(core, opts) {
 
   // 채팅 첨부: 터미널 에이전트는 바이너리를 받을 수 없다. 파일로 떨군 뒤 절대경로를 프롬프트에 실어 보낸다.
   const UPLOAD_DIR = opts.UPLOAD_DIR || path.join(ROOT, '.ana', 'uploads');
-  const MAX_UPLOAD = opts.MAX_UPLOAD || 10 * 1024 * 1024;
+  const MAX_UPLOAD = opts.MAX_UPLOAD || 10 * 1024 * 1024, MAX_UPLOAD_CHAT = MAX_UPLOAD;
+  const CASE_UPLOAD = Math.max(MAX_UPLOAD, opts.CASE_UPLOAD || 40 * 1024 * 1024);   // 의뢰서 묶음(스캔 PDF)
   // 경로 탈출·셸 특수문자 차단: 디렉터리 성분을 버리고 안전 문자만 남긴다.
   const safeName = (n) => {
     const base = String(n || 'file').split(/[\\/]/).pop() || 'file';
@@ -836,6 +837,7 @@ function createDashboardApi(core, opts) {
     // 채팅 첨부 업로드(base64 JSON — csrfOk가 JSON content-type을 요구하므로 multipart 대신 사용)
     if (p === '/api/upload' && req.method === 'POST') {
       if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const MAX_UPLOAD = url.searchParams.get('for') === 'case' ? CASE_UPLOAD : MAX_UPLOAD_CHAT;
       const cap = Math.ceil(MAX_UPLOAD * 4 / 3) + 8192;   // base64 팽창분 + 필드 여유
       const body = await jsonBody(req, res, cap); if (!body) return true;
       const b64 = typeof body.data === 'string' ? body.data.replace(/^data:[^,]*,/, '') : '';
@@ -1345,6 +1347,202 @@ function createDashboardApi(core, opts) {
         save(rq); return sendJson(res, 200, { ok: true }), true;
       }
       return sendJson(res, 404, { error: 'unknown requirements route' }), true;
+    }
+
+    // ---- 의뢰 분석(법독성): 의뢰 내용·임상증상 → 검사할 약독물 우선순위 + 추출법·기기 제안 ----
+    // 워크스페이스마다 따로(상태 파일 옆 cases.json). 에이전트는 skills/forensic-tox/SKILL.md를 근거로 분석한다.
+    if (p.startsWith('/api/cases')) {
+      const ws = curWs(), file = path.join(path.dirname(dataFileOf(ws)), 'cases.json');
+      const load = () => { const r = readJsonStrict(file, () => ({ next: 1, items: [], jobNext: 1, jobs: [] })); return r && Array.isArray(r.items) ? r : { next: 1, items: [], jobNext: 1, jobs: [] }; };
+      const save = (r) => { r.version = (r.version || 1) + 1; writeJsonAtomic(file, r); broadcast({ kind: 'cases', version: r.version }); };
+      const cs = load(); cs.jobs = cs.jobs || []; cs.jobNext = cs.jobNext || 1;
+      const now = new Date().toISOString(), cut = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+      const list = (v, n, m) => (Array.isArray(v) ? v : []).map((x) => cut(x, m)).filter(Boolean).slice(0, n);
+      const TYPES = ['autopsy', 'dfsa_victim', 'dfsa_suspect', 'compliance', 'animal', 'plant', 'other'];
+      // 의뢰서 원본 파일 — /api/upload가 돌려준 경로(업로드 폴더 안)만 받는다
+      const fileOf = (f) => { if (!f || typeof f.path !== 'string') return null; const abs = path.resolve(f.path);
+        return path.dirname(abs) === path.resolve(UPLOAD_DIR) ? { name: cut(f.name || path.basename(abs), 200), path: abs } : null; };
+      const fields = (b, old = {}) => ({
+        title: cut(b.title ?? old.title, 200), type: TYPES.includes(b.type) ? b.type : (old.type || 'other'),
+        samples: b.samples !== undefined ? list(b.samples, 30, 60) : (old.samples || []),
+        symptoms: cut(b.symptoms ?? old.symptoms, 8000), meds: cut(b.meds ?? old.meds, 2000),
+        elapsed: cut(b.elapsed ?? old.elapsed, 200), extra: cut(b.extra ?? old.extra, 4000),
+        file: b.file !== undefined ? fileOf(b.file) : (old.file || null) });
+      const jobOf = (id) => cs.jobs.find((j) => j.id === Number(id));
+      cs.extracts = cs.extracts || []; cs.extractNext = cs.extractNext || 1;
+      if (p === '/api/cases' && req.method === 'GET') return sendJson(res, 200, { items: cs.items, job: cs.jobs[cs.jobs.length - 1] || null, extracts: cs.extracts }), true;
+      if (p === '/api/cases/extract-input' && req.method === 'GET') {
+        const x = cs.extracts.find((e) => e.id === Number(url.searchParams.get('job'))); if (!x) return sendJson(res, 404, { error: 'no such extract' }), true;
+        const files = x.files || [x.file];
+        return sendJson(res, 200, { job: x.id, files: files.map((f, i) => ({ index: i, name: f.name, path: f.path })), file: files[0].path, name: files[0].name, types: TYPES }), true;
+      }
+      if (p === '/api/cases/input' && req.method === 'GET') {
+        const j = jobOf(url.searchParams.get('job')); if (!j) return sendJson(res, 404, { error: 'no such analysis' }), true;
+        const ids = j.caseIds || [j.caseId], strip = ({ analysis, plan, ...rest }) => ({ ...rest, previous: analysis ? { summary: analysis.summary, at: analysis.at } : null });
+        const cases = ids.map((id) => cs.items.find((x) => x.id === id)).filter(Boolean); if (!cases.length) return sendJson(res, 404, { error: 'case removed' }), true;
+        const todo = cases.filter((c) => !(j.done || []).includes(c.id)).map(strip);
+        return sendJson(res, 200, { job: j.id, guide: path.join(ROOT, 'skills', 'forensic-tox', 'SKILL.md'), total: cases.length, remaining: todo.length, cases: todo, case: todo[0] || strip(cases[0]), previous: todo[0] ? todo[0].previous : null }), true;
+      }
+      if (req.method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' }), true;
+      if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
+      const body = await jsonBody(req, res, 2 * 1024 * 1024); if (!body) return true;
+      if (p === '/api/cases') {
+        if (body.action === 'add') {
+          const f = fields(body); if (!f.title) return sendJson(res, 400, { error: 'title required' }), true;
+          const it = { id: cs.next++, ...f, by: actor(req), at: now, updatedAt: now, analysis: null };
+          const dx = body.draft && cs.extracts.find((e) => e.id === Number(body.draft.job)), dd = dx && (dx.drafts || [])[Number(body.draft.i)];
+          if (dd && dd.status === 'draft') Object.assign(dd, { status: 'registered', caseId: it.id });
+          cs.items.push(it); save(cs); audit(actor(req), 'case.add', f.title.slice(0, 80)); return sendJson(res, 200, { ok: true, item: it }), true;
+        }
+        const it = cs.items.find((x) => x.id === Number(body.id)); if (!it) return sendJson(res, 404, { error: 'not found' }), true;
+        if (body.action === 'update') {
+          const f = fields(body, it); if (!f.title) return sendJson(res, 400, { error: 'title required' }), true;
+          const changed = Object.keys(f).some((k) => JSON.stringify(f[k]) !== JSON.stringify(it[k]));
+          Object.assign(it, f, { updatedAt: now });
+          if (changed && it.analysis) it.analysis.stale = true;      // 의뢰 내용이 바뀌면 이전 제안은 '다시 분석 필요'
+          save(cs); return sendJson(res, 200, { ok: true, item: it }), true;
+        }
+        if (body.action === 'remove') { cs.items = cs.items.filter((x) => x !== it); save(cs); audit(actor(req), 'case.remove', it.title.slice(0, 80)); return sendJson(res, 200, { ok: true }), true; }
+        return sendJson(res, 400, { error: 'action must be add|update|remove' }), true;
+      }
+      // ---- 의뢰서 파일 → 입력칸 채우기: 에이전트가 파일을 읽고 값만 돌려준다(등록은 사람이 확인한 뒤) ----
+      if (p === '/api/cases/extract') {
+        const files = (Array.isArray(body.files) ? body.files : [body.file]).slice(0, 40).map(fileOf);
+        if (!files.length || files.some((f) => !f)) return sendJson(res, 400, { error: '의뢰서 파일을 먼저 올려 주세요' }), true;
+        const x = { id: cs.extractNext++, status: 'running', file: files[0], files, at: now, updatedAt: now };
+        cs.extracts.push(x); while (cs.extracts.length > 10) cs.extracts.shift(); save(cs); audit(actor(req), 'case.extract', `${files[0].name.slice(0, 60)}${files.length > 1 ? ` 외 ${files.length - 1}` : ''}`);
+        return sendJson(res, 200, { ok: true, extract: x }), true;
+      }
+      if (p === '/api/cases/extract-result' || p === '/api/cases/extract-fail' || p === '/api/cases/extract-cancel') {
+        const x = cs.extracts.find((e) => e.id === Number(body.job)); if (!x) return sendJson(res, 404, { error: 'no such extract' }), true;
+        if (x.status !== 'running') return sendJson(res, 409, { error: `extract is ${x.status}` }), true;
+        x.updatedAt = now;
+        if (p.endsWith('result')) {
+          // 한 PDF에 여러 의뢰서가 묶여 올 수 있다 — cases[]로 받고, 하나면 fields로도 받는다
+          const files = x.files || [x.file];
+          const raw = Array.isArray(body.cases) ? body.cases : [{ fields: body.fields, notes: body.notes, file: 0 }];
+          const drafts = raw.slice(0, 100).map((r, i) => {
+            const fi = typeof r.file === 'number' ? r.file : Math.max(0, files.findIndex((f) => f.name === r.file));
+            const f = fields((r && r.fields) || {}); f.file = files[fi] || files[0];
+            return { i, fields: f, notes: list(r && r.notes, 20, 500), pages: cut(r && r.pages, 40), status: 'draft' };
+          }).filter((d) => d.fields.title || d.fields.symptoms);
+          if (!drafts.length) return sendJson(res, 400, { error: '의뢰마다 fields.title 또는 fields.symptoms가 필요해요' }), true;
+          drafts.forEach((d, i) => { d.i = i; });
+          Object.assign(x, { status: 'done', drafts, fields: drafts[0].fields, notes: drafts[0].notes });
+          save(cs); return sendJson(res, 200, { ok: true, drafts: drafts.length }), true;
+        } else Object.assign(x, { status: p.endsWith('fail') ? 'failed' : 'cancelled', reason: cut(body.reason, 300) });
+        save(cs); return sendJson(res, 200, { ok: true }), true;
+      }
+      // ---- 정리된 초안: 사람이 훑어보고 고른 것만 등록(register) 또는 버리기(drop) ----
+      if (p === '/api/cases/drafts') {
+        const x = cs.extracts.find((e) => e.id === Number(body.job)); if (!x || !x.drafts) return sendJson(res, 404, { error: 'no such extract' }), true;
+        const picks = (Array.isArray(body.picks) ? body.picks.map(Number) : x.drafts.map((d) => d.i));
+        const ds = x.drafts.filter((d) => picks.includes(d.i) && d.status === 'draft');
+        if (!ds.length) return sendJson(res, 400, { error: '고른 초안이 없어요' }), true;
+        if (body.action === 'drop') { ds.forEach((d) => { d.status = 'dropped'; }); save(cs); return sendJson(res, 200, { ok: true, dropped: ds.length }), true; }
+        if (body.action !== 'register') return sendJson(res, 400, { error: 'action must be register|drop' }), true;
+        const made = ds.filter((d) => d.fields.title).map((d) => {
+          const it = { id: cs.next++, ...d.fields, by: actor(req), at: now, updatedAt: now, analysis: null };
+          cs.items.push(it); Object.assign(d, { status: 'registered', caseId: it.id }); return it.id;
+        });
+        if (!made.length) return sendJson(res, 400, { error: '접수번호·사건명이 없는 초안은 폼에서 고친 뒤 등록하세요' }), true;
+        save(cs); audit(actor(req), 'case.add.bulk', `${made.length}건`);
+        return sendJson(res, 200, { ok: true, ids: made, skipped: ds.length - made.length }), true;
+      }
+      // ---- 실험 배치 → 할일·기기 일정: 의뢰 메모 ─SPAWNED→ 할일 ─SCHEDULED_AS→ 일정 (NodeRel) ----
+      if (p === '/api/cases/plan') {
+        const c = cs.items.find((x) => x.id === Number(body.id)); if (!c) return sendJson(res, 404, { error: 'not found' }), true;
+        if (body.action === 'forget') { c.plan = null; save(cs); return sendJson(res, 200, { ok: true }), true; }
+        // 사람이 훑어보고 지우기: 배치 하나(remove, taskId) 또는 계획 전체(clear — 작업지시 메모까지). 관계는 saveData가 정리한다
+        if (body.action === 'remove' || body.action === 'clear') {
+          if (!c.plan) return sendJson(res, 404, { error: '계획이 없어요' }), true;
+          const gone = body.action === 'clear' ? c.plan.batches : c.plan.batches.filter((b) => b.taskId === String(body.taskId || ''));
+          if (!gone.length) return sendJson(res, 404, { error: 'no such batch' }), true;
+          let st; try { st = loadData(ws); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
+          const me = actor(req), ids = new Set(gone.flatMap((b) => [b.taskId, b.eventId]));
+          if (body.action === 'clear') ids.add(c.plan.noteId);
+          const recs = [...st.items, ...st.events, ...st.notes].filter((x) => ids.has(x.id));
+          if (recs.some((x) => !owns(x, me))) return sendJson(res, 403, { error: 'Only the author can delete this' }), true;
+          st.items = st.items.filter((x) => !ids.has(x.id)); st.events = st.events.filter((x) => !ids.has(x.id)); st.notes = st.notes.filter((x) => !ids.has(x.id));
+          st.version = (st.version || 1) + 1; saveData(st, ws); broadcast({ kind: 'data', version: st.version });
+          c.plan.batches = c.plan.batches.filter((b) => !gone.includes(b));
+          if (body.action === 'clear' || !c.plan.batches.length) c.plan = null;   // 다 지우면 다시 만들 수 있다
+          save(cs); audit(me, `case.plan.${body.action}`, `${c.title.slice(0, 60)} · ${gone.length}`);
+          return sendJson(res, 200, { ok: true, removed: recs.length, plan: c.plan }), true;
+        }
+        const all = (c.analysis && c.analysis.batches) || []; if (!all.length) return sendJson(res, 400, { error: '분석 결과에 실험 배치가 없어요' }), true;
+        // 만들기 전에 고르기: pick = 남길 배치 번호(0부터). 없으면 전부
+        const bs = Array.isArray(body.pick) ? all.filter((_, i) => body.pick.map(Number).includes(i)) : all;
+        if (!bs.length) return sendJson(res, 400, { error: '배치를 하나 이상 고르세요' }), true;
+        if (c.plan) return sendJson(res, 409, { error: '이미 계획을 만들었어요' }), true;
+        const start = String(body.start || ''), time = String(body.time || '09:00');
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || Number.isNaN(Date.parse(start + 'T00:00:00Z'))) return sendJson(res, 400, { error: 'start must be YYYY-MM-DD' }), true;
+        if (!/^\d{2}:\d{2}$/.test(time)) return sendJson(res, 400, { error: 'time must be HH:MM' }), true;
+        // 배치 하나에 근무일 하루씩(주말 건너뜀) — 날짜는 일정에서 옮기면 된다
+        const days = []; for (let d = new Date(start + 'T00:00:00Z'); days.length < bs.length; d.setUTCDate(d.getUTCDate() + 1)) if (d.getUTCDay() % 6) days.push(d.toISOString().slice(0, 10));
+        let st; try { st = loadData(ws); } catch (e) { return sendJson(res, 500, { error: 'state file corrupt', detail: e.message }), true; }
+        const a = c.analysis, by = actor(req);
+        const text = [`의뢰 #${c.id} · ${(c.samples || []).join(', ')}${c.elapsed ? ` · 경과 ${c.elapsed}` : ''}`, '', a.summary || '', '',
+          '## 실험 배치', ...bs.map((b, i) => `- ${days[i]} ${b.name}: ${[b.sample, b.extraction, b.instrument].filter(Boolean).join(' → ')}${b.items.length ? ` (${b.items.join(', ')})` : ''}`), '',
+          '## 검사 우선순위', ...a.priorities.map((q) => `${q.rank}. ${q.name} — ${[q.extraction, q.instrument].filter(Boolean).join(' → ')}`),
+          ...(a.cautions.length ? ['', '## 주의사항', ...a.cautions.map((x) => `- ${x}`)] : [])].join('\n');
+        const note = { id: newId('n'), title: `의뢰 ${c.title}`.slice(0, 200), text: text.slice(0, 20000), by, updatedAt: now };
+        st.notes.push(note);
+        const plan = { noteId: note.id, at: now, batches: [] };
+        for (const [i, b] of bs.entries()) {
+          const it = { id: newId('a'), title: `[${c.title}] ${b.name || '배치 ' + (i + 1)}`.slice(0, 200), done: false, by, due: days[i] };
+          const ev = { id: newId('e'), title: `${b.instrument || '기기'} — ${b.name || '배치 ' + (i + 1)} (${c.title})`.slice(0, 200), date: days[i], time, done: false, by };
+          st.items.push(it); st.events.push(ev);
+          const err = relgraph.addLink(st, { from: note.id, to: it.id, type: 'SPAWNED' }, by) || relgraph.addLink(st, { from: it.id, to: ev.id, type: 'SCHEDULED_AS' }, by);
+          if (err) return sendJson(res, 400, { error: err }), true;
+          plan.batches.push({ name: b.name, taskId: it.id, eventId: ev.id, date: days[i] });
+        }
+        st.version = (st.version || 1) + 1; saveData(st, ws); broadcast({ kind: 'data', version: st.version });
+        c.plan = plan; save(cs); audit(by, 'case.plan', `${c.title.slice(0, 60)} · ${bs.length}`);
+        return sendJson(res, 200, { ok: true, plan }), true;
+      }
+      if (p === '/api/cases/analyze') {
+        if (cs.jobs.some((j) => j.status === 'running')) return sendJson(res, 409, { error: '이미 분석 중인 의뢰가 있어요 — 끝나거나 취소한 뒤에 다시 시도하세요' }), true;
+        const ids = [...new Set((Array.isArray(body.ids) ? body.ids : [body.id]).map(Number))].filter((id) => cs.items.some((x) => x.id === id)).slice(0, 50);
+        if (!ids.length) return sendJson(res, 404, { error: 'not found' }), true;
+        const j = { id: cs.jobNext++, status: 'running', progress: 0, step: '에이전트를 기다리는 중', caseId: ids[0], caseIds: ids, done: [], at: now, updatedAt: now };
+        cs.jobs.push(j); while (cs.jobs.length > 10) cs.jobs.shift(); save(cs); audit(actor(req), 'case.analyze', ids.length > 1 ? `${ids.length}건` : cs.items.find((x) => x.id === ids[0]).title.slice(0, 80));
+        return sendJson(res, 200, { ok: true, job: j }), true;
+      }
+      const j = jobOf(body.job); if (!j) return sendJson(res, 404, { error: 'no such analysis' }), true;
+      if (j.status !== 'running') return sendJson(res, 409, { error: `analysis is ${j.status}` }), true;
+      if (p === '/api/cases/progress') {
+        const pct = Number(body.progress); if (Number.isFinite(pct)) j.progress = Math.max(j.progress, Math.min(99, Math.round(pct)));
+        if (body.step) j.step = cut(body.step, 200); j.updatedAt = now; save(cs); return sendJson(res, 200, { ok: true }), true;
+      }
+      if (p === '/api/cases/result') {
+        const ids = j.caseIds || [j.caseId]; j.done = j.done || [];
+        const cid = body.case !== undefined ? Number(body.case) : ids.length === 1 ? ids[0] : NaN;
+        if (!ids.includes(cid)) return sendJson(res, 400, { error: `case required — one of ${ids.join(', ')}` }), true;
+        const c = cs.items.find((x) => x.id === cid); if (!c) return sendJson(res, 404, { error: 'case removed' }), true;
+        const LEVELS = ['high', 'mid', 'low'];
+        const priorities = (Array.isArray(body.priorities) ? body.priorities : []).filter((x) => x && cut(x.name, 200)).slice(0, 60).map((x, i) => ({
+          rank: Number.isFinite(Number(x.rank)) ? Number(x.rank) : i + 1, name: cut(x.name, 200), class: cut(x.class, 200),
+          level: LEVELS.includes(x.level) ? x.level : 'mid', why: cut(x.why, 1500), samples: list(x.samples, 10, 60),
+          targets: cut(x.targets, 500), extraction: cut(x.extraction, 800), instrument: cut(x.instrument, 300), window: cut(x.window, 300) }))
+          .sort((a, b) => a.rank - b.rank);
+        if (!priorities.length) return sendJson(res, 400, { error: 'priorities[] with name required' }), true;
+        const batches = (Array.isArray(body.batches) ? body.batches : []).slice(0, 20).map((b) => ({
+          name: cut(b && b.name, 200), sample: cut(b && b.sample, 200), extraction: cut(b && b.extraction, 800), instrument: cut(b && b.instrument, 300), items: list(b && b.items, 60, 200) }))
+          .filter((b) => b.extraction || b.instrument);
+        c.analysis = { summary: cut(body.summary, 3000), priorities, batches, cautions: list(body.cautions, 20, 800), questions: list(body.questions, 20, 800), at: now, job: j.id, stale: false };
+        if (!j.done.includes(cid)) j.done.push(cid);
+        const left = ids.filter((id) => !j.done.includes(id) && cs.items.some((x) => x.id === id));
+        if (left.length) Object.assign(j, { progress: Math.max(j.progress, Math.round(99 * j.done.length / ids.length)), step: `${j.done.length}/${ids.length}건 완료 — 다음: #${left[0]}`, updatedAt: now });
+        else Object.assign(j, { status: 'done', progress: 100, step: '완료', updatedAt: now, doneAt: now });
+        save(cs); audit(actor(req), 'case.analyzed', `${c.title.slice(0, 60)} · ${priorities.length}`);
+        return sendJson(res, 200, { ok: true, priorities: priorities.length, batches: batches.length, remaining: left }), true;
+      }
+      if (p === '/api/cases/fail' || p === '/api/cases/cancel') {
+        j.status = p.endsWith('fail') ? 'failed' : 'cancelled'; j.step = j.status === 'failed' ? cut(body.reason || '실패', 300) : '취소됨'; j.updatedAt = now;
+        save(cs); return sendJson(res, 200, { ok: true }), true;
+      }
+      return sendJson(res, 404, { error: 'unknown cases route' }), true;
     }
 
     // ---- 관계 분석(온톨로지 · 지식그래프) ----
