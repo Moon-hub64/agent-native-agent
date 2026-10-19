@@ -1189,6 +1189,40 @@ async function integration() {
       r = await post('/api/cases/plan', { id: ids[0], start: '2026-10-26' }); assert.equal(r.status, 200, '지운 뒤 다시 만들기');
     });
 
+    await ta('C21 실험실 정보: 하지 않는 검사(기본 에탄올·일산화탄소) 제외, 전처리(c18|ppt) 검증, 보유 기기·표준품 표시', async () => {
+      let list = await (await fetch(`${api}/api/cases`)).json();
+      assert.deepEqual(list.lab.excluded, ['에탄올', '일산화탄소'], '기본 제외');
+      const c = (await (await post('/api/cases', { action: 'add', title: 'LAB-1', type: 'dfsa_victim', symptoms: '기억 소실' })).json()).item;
+      let j = (await (await post('/api/cases/analyze', { id: c.id })).json()).job;
+      let r = await post('/api/cases/result', { job: j.id, priorities: [{ name: '에탄올 + EtG·EtS' }, { name: 'COHb', class: '일산화탄소' }] });
+      assert.equal(r.status, 400, '제외 검사만 있으면 거절');
+      let out = await (await post('/api/cases/result', { job: j.id, priorities: [
+        { rank: 1, name: '에탄올', instrument: 'HS-GC-FID' },
+        { rank: 2, name: '졸피뎀', prep: 'c18', instrument: 'LC-MS/MS (MRM)' },
+        { rank: 3, name: 'GHB', prep: 'ppt', instrument: 'GC-MS' },
+        { rank: 4, name: '메트설퓨론 metsulfuron-methyl', prep: 'weird', instrument: 'LC-MS/MS' } ],
+        batches: [{ name: '알코올', prep: 'other', instrument: 'HS-GC-FID', items: ['에탄올', 'EtG'] }, { name: 'A', prep: 'c18', instrument: 'LC-MS/MS', items: ['졸피뎀', '에탄올'] }] })).json();
+      assert.deepEqual(out.dropped, ['에탄올']);
+      list = await (await fetch(`${api}/api/cases`)).json();
+      let an = list.items.find((x) => x.id === c.id).analysis;
+      assert.deepEqual(an.priorities.map((q) => [q.rank, q.name, q.prep]), [[1, '졸피뎀', 'c18'], [2, 'GHB', 'ppt'], [3, '메트설퓨론 metsulfuron-methyl', '']], '순위 다시 매김, 모르는 prep은 빈칸, metsulfuron은 EtS로 오인하지 않음');
+      assert.deepEqual(an.batches.map((b) => [b.name, b.items]), [['A', ['졸피뎀']]], '제외 항목만 있는 배치는 빼고, 섞인 배치는 항목만 뺀다');
+      // 실험실 정보 등록 → 보유 기기 아님(off)·표준품 표시
+      const lab = (await (await post('/api/cases/lab', { instruments: 'LC-MS/MS (Sciex 6500+)\nGC-MS', standards: '졸피뎀, ZPCA', methods: 'DFSA 패널', excluded: '에탄올\n일산화탄소\n시안화물' })).json()).lab;
+      assert.deepEqual([lab.instruments.length, lab.standards, lab.excluded.length], [2, ['졸피뎀', 'ZPCA'], 3]);
+      j = (await (await post('/api/cases/analyze', { id: c.id })).json()).job;
+      const inp = await (await fetch(`${api}/api/cases/input?job=${j.id}`)).json(); assert.equal(inp.lab.methods[0], 'DFSA 패널');
+      await post('/api/cases/result', { job: j.id, priorities: [
+        { name: '졸피뎀', prep: 'c18', instrument: 'LC-MS/MS' }, { name: 'GHB', prep: 'ppt', instrument: 'GC-MS', std: 'partial', stdNote: 'GHB-d6 없음' },
+        { name: '파라콰트', prep: 'ppt', instrument: 'HILIC-LC-HRMS' }, { name: '시안화물', instrument: 'HS-GC-NPD' } ] });
+      list = await (await fetch(`${api}/api/cases`)).json(); an = list.items.find((x) => x.id === c.id).analysis;
+      const by = Object.fromEntries(an.priorities.map((q) => [q.name, q]));
+      assert.equal(by['졸피뎀'].std, 'have'); assert.equal(by['GHB'].std, 'partial', '에이전트 표시 우선'); assert.equal(by['파라콰트'].std, 'need');
+      assert.ok(!by['졸피뎀'].off && by['파라콰트'].off, '보유 목록에 없는 기기 표시');
+      assert.ok(!by['시안화물'] && an.dropped.includes('시안화물'), '사용자가 더한 제외 항목');
+      assert.ok(an.labAt === lab.at);
+    });
+
     await ta('C15 요청(Requests): 에이전트 등록·중복 방지·kind 검증, 답변→answered, 완료/보류/재개', async () => {
       let r = await post('/api/requests', { requests: [{ kind: 'decision', title: 'Pick one', options: ['A', 'B'] }, { kind: 'access', title: 'Share calendar' }] });
       let j = await r.json(); assert.equal(j.added, 2);

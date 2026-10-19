@@ -1370,7 +1370,15 @@ function createDashboardApi(core, opts) {
         file: b.file !== undefined ? fileOf(b.file) : (old.file || null) });
       const jobOf = (id) => cs.jobs.find((j) => j.id === Number(id));
       cs.extracts = cs.extracts || []; cs.extractNext = cs.extractNext || 1;
-      if (p === '/api/cases' && req.method === 'GET') return sendJson(res, 200, { items: cs.items, job: cs.jobs[cs.jobs.length - 1] || null, extracts: cs.extracts }), true;
+      // 실험실 정보(보유 기기·표준품·밸리데이션된 방법) — 분석은 이 안에서만 제안한다. 비어 있으면 제한 없음
+      // excluded: 이 실험실에서 하지 않는 검사 — 기본은 에탄올·일산화탄소. 결과에 들어와도 서버가 뺀다
+      const lab = { instruments: [], standards: [], methods: [], excluded: ['에탄올', '일산화탄소'], at: '', ...(cs.lab || {}) };
+      const EXCL_ALIAS = { 에탄올: ['에탄올', '알코올', 'ethanol', 'etg', 'ets', '에틸글루쿠로나이드', '에틸설페이트'], 일산화탄소: ['일산화탄소', 'cohb', '카복시헤모글로빈', 'carbonmonoxide'] };
+      const exclTerms = lab.excluded.flatMap((x) => EXCL_ALIAS[x] || [x]).map((x) => String(x).toLowerCase().replace(/\s/g, '')).filter(Boolean);
+      const isExcl = (...t) => { const v = t.join(' ').toLowerCase().replace(/\s/g, ''); return exclTerms.some((k) => /[a-z]/.test(k) ? new RegExp(`(^|[^a-z])${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z]|$)`).test(v) : v.includes(k)); };   // 영문 별칭은 낱말 단위(metsulfuron의 'ets' 오인 방지)
+      const instKey = (x) => String(x).split(/[\s(（]/)[0].toLowerCase();   // "LC-MS/MS (Sciex 6500+)" → "lc-ms/ms"
+      const normStd = (x) => String(x).toLowerCase().replace(/[\s·,()（）\-]/g, '');
+      if (p === '/api/cases' && req.method === 'GET') return sendJson(res, 200, { items: cs.items, job: cs.jobs[cs.jobs.length - 1] || null, extracts: cs.extracts, lab }), true;
       if (p === '/api/cases/extract-input' && req.method === 'GET') {
         const x = cs.extracts.find((e) => e.id === Number(url.searchParams.get('job'))); if (!x) return sendJson(res, 404, { error: 'no such extract' }), true;
         const files = x.files || [x.file];
@@ -1381,7 +1389,7 @@ function createDashboardApi(core, opts) {
         const ids = j.caseIds || [j.caseId], strip = ({ analysis, plan, ...rest }) => ({ ...rest, previous: analysis ? { summary: analysis.summary, at: analysis.at } : null });
         const cases = ids.map((id) => cs.items.find((x) => x.id === id)).filter(Boolean); if (!cases.length) return sendJson(res, 404, { error: 'case removed' }), true;
         const todo = cases.filter((c) => !(j.done || []).includes(c.id)).map(strip);
-        return sendJson(res, 200, { job: j.id, guide: path.join(ROOT, 'skills', 'forensic-tox', 'SKILL.md'), total: cases.length, remaining: todo.length, cases: todo, case: todo[0] || strip(cases[0]), previous: todo[0] ? todo[0].previous : null }), true;
+        return sendJson(res, 200, { job: j.id, guide: path.join(ROOT, 'skills', 'forensic-tox', 'SKILL.md'), lab, total: cases.length, remaining: todo.length, cases: todo, case: todo[0] || strip(cases[0]), previous: todo[0] ? todo[0].previous : null }), true;
       }
       if (req.method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' }), true;
       if (!csrfOk(req)) return sendJson(res, 403, { error: 'forbidden (origin/content-type)' }), true;
@@ -1432,6 +1440,14 @@ function createDashboardApi(core, opts) {
           save(cs); return sendJson(res, 200, { ok: true, drafts: drafts.length }), true;
         } else Object.assign(x, { status: p.endsWith('fail') ? 'failed' : 'cancelled', reason: cut(body.reason, 300) });
         save(cs); return sendJson(res, 200, { ok: true }), true;
+      }
+      if (p === '/api/cases/lab') {
+        // 한 줄에 하나(쉼표도 나눔 — 표준품은 이름에 쉼표가 드물다). 기기·방법은 줄 단위만
+        const lines = (v, n, m, comma) => [...new Set((Array.isArray(v) ? v : String(v || '').split(comma ? /[\n,，]/ : /\n/)).map((x) => cut(x, m)).filter(Boolean))].slice(0, n);
+        cs.lab = { instruments: lines(body.instruments, 50, 120), standards: lines(body.standards, 2000, 120, true), methods: lines(body.methods, 200, 400),
+          excluded: body.excluded !== undefined ? lines(body.excluded, 50, 60, true) : lab.excluded, at: now, by: actor(req) };
+        save(cs); audit(actor(req), 'case.lab', `기기 ${cs.lab.instruments.length} · 표준품 ${cs.lab.standards.length} · 방법 ${cs.lab.methods.length}`);
+        return sendJson(res, 200, { ok: true, lab: cs.lab }), true;
       }
       // ---- 정리된 초안: 사람이 훑어보고 고른 것만 등록(register) 또는 버리기(drop) ----
       if (p === '/api/cases/drafts') {
@@ -1524,19 +1540,35 @@ function createDashboardApi(core, opts) {
         const priorities = (Array.isArray(body.priorities) ? body.priorities : []).filter((x) => x && cut(x.name, 200)).slice(0, 60).map((x, i) => ({
           rank: Number.isFinite(Number(x.rank)) ? Number(x.rank) : i + 1, name: cut(x.name, 200), class: cut(x.class, 200),
           level: LEVELS.includes(x.level) ? x.level : 'mid', why: cut(x.why, 1500), samples: list(x.samples, 10, 60),
-          targets: cut(x.targets, 500), extraction: cut(x.extraction, 800), instrument: cut(x.instrument, 300), window: cut(x.window, 300) }))
+          targets: cut(x.targets, 500), extraction: cut(x.extraction, 800), instrument: cut(x.instrument, 300), window: cut(x.window, 300),
+          std: ['have', 'partial', 'need'].includes(x.std) ? x.std : '', stdNote: cut(x.stdNote, 500), method: cut(x.method, 400),
+          prep: ['c18', 'ppt', 'other'].includes(x.prep) ? x.prep : '' }))
           .sort((a, b) => a.rank - b.rank);
-        if (!priorities.length) return sendJson(res, 400, { error: 'priorities[] with name required' }), true;
-        const batches = (Array.isArray(body.batches) ? body.batches : []).slice(0, 20).map((b) => ({
-          name: cut(b && b.name, 200), sample: cut(b && b.sample, 200), extraction: cut(b && b.extraction, 800), instrument: cut(b && b.instrument, 300), items: list(b && b.items, 60, 200) }))
-          .filter((b) => b.extraction || b.instrument);
-        c.analysis = { summary: cut(body.summary, 3000), priorities, batches, cautions: list(body.cautions, 20, 800), questions: list(body.questions, 20, 800), at: now, job: j.id, stale: false };
+        // 이 실험실에서 하지 않는 검사(에탄올·일산화탄소 등)는 빼고, 뺀 것은 화면에 알린다
+        const dropped = priorities.filter((q) => isExcl(q.name, q.class)).map((q) => q.name);
+        for (let i = priorities.length - 1; i >= 0; i--) if (dropped.includes(priorities[i].name)) priorities.splice(i, 1);
+        priorities.forEach((q, i) => { q.rank = i + 1; });
+        // 실험실 정보가 있으면 서버도 확인한다: 보유 목록에 없는 기기는 off, 에이전트가 표준품 표시를 빼먹으면 이름으로 맞춰 본다
+        if (lab.instruments.length) {
+          const have = lab.instruments.map(instKey);
+          for (const q of priorities) if (q.instrument && !have.some((k) => q.instrument.toLowerCase().includes(k))) q.off = true;
+        }
+        if (lab.standards.length) {
+          const std = lab.standards.map(normStd);
+          for (const q of priorities) if (!q.std) q.std = std.includes(normStd(q.name)) ? 'have' : 'need';
+        }
+        if (!priorities.length) return sendJson(res, 400, { error: dropped.length ? `실험실에서 하지 않는 검사(${dropped.join(', ')})만 있어요` : 'priorities[] with name required' }), true;
+        const batches = (Array.isArray(body.batches) ? body.batches : []).slice(0, 20).map((b) => { const raw = list(b && b.items, 60, 200); return {
+          name: cut(b && b.name, 200), prep: ['c18', 'ppt', 'other'].includes(b && b.prep) ? b.prep : '', sample: cut(b && b.sample, 200), extraction: cut(b && b.extraction, 800), instrument: cut(b && b.instrument, 300),
+          items: raw.filter((x) => !isExcl(x)), allExcl: raw.length > 0 && raw.every((x) => isExcl(x)) }; })
+          .filter((b) => (b.extraction || b.instrument) && !b.allExcl && !isExcl(b.name)).map(({ allExcl, ...b }) => b);
+        c.analysis = { summary: cut(body.summary, 3000), priorities, batches, cautions: list(body.cautions, 20, 800), questions: list(body.questions, 20, 800), at: now, job: j.id, stale: false, labAt: lab.at || '', dropped };
         if (!j.done.includes(cid)) j.done.push(cid);
         const left = ids.filter((id) => !j.done.includes(id) && cs.items.some((x) => x.id === id));
         if (left.length) Object.assign(j, { progress: Math.max(j.progress, Math.round(99 * j.done.length / ids.length)), step: `${j.done.length}/${ids.length}건 완료 — 다음: #${left[0]}`, updatedAt: now });
         else Object.assign(j, { status: 'done', progress: 100, step: '완료', updatedAt: now, doneAt: now });
         save(cs); audit(actor(req), 'case.analyzed', `${c.title.slice(0, 60)} · ${priorities.length}`);
-        return sendJson(res, 200, { ok: true, priorities: priorities.length, batches: batches.length, remaining: left }), true;
+        return sendJson(res, 200, { ok: true, priorities: priorities.length, batches: batches.length, dropped, remaining: left }), true;
       }
       if (p === '/api/cases/fail' || p === '/api/cases/cancel') {
         j.status = p.endsWith('fail') ? 'failed' : 'cancelled'; j.step = j.status === 'failed' ? cut(body.reason || '실패', 300) : '취소됨'; j.updatedAt = now;

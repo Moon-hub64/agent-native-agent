@@ -1153,6 +1153,18 @@ body.sys-mode .ws-combo { display: none; }
 .cs-dacts button { height: 34px; padding: 0 14px; border-radius: 10px; font-weight: 800; font-size: 13px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); color: var(--text-sub); }
 .cs-dacts .ok { background: var(--blue); color: var(--white); box-shadow: none; } .cs-dacts .ok2 { background: var(--text); color: var(--bg); box-shadow: none; } .cs-dacts button:disabled { opacity: .45; }
 @media (max-width: 560px) { .cs-d { flex-wrap: wrap; } .cs-d .ac { flex-direction: row; width: 100%; justify-content: flex-end; } }
+.cs-lab { padding: 12px 16px; margin-bottom: 12px; } .cs-lab .ana-top button { font-size: 12.5px; font-weight: 800; color: var(--blue); }
+.cs-labgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 10px 0; }
+.cs-labgrid textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 10px; border: 0; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); color: var(--text); font: inherit; font-size: 13px; resize: vertical; }
+.cs-labgrid .cs-f i { font-style: normal; font-weight: 700; color: var(--text-weak); }
+.cs-prepgrp { margin-top: 8px; } .cs-prepgrp .ph { font-size: 12.5px; font-weight: 800; margin: 2px 0 6px; padding-left: 8px; border-left: 3px solid var(--line); }
+.cs-prepgrp .ph span { color: var(--text-weak); font-weight: 700; } .cs-prepgrp.c18 .ph { border-color: var(--blue); } .cs-prepgrp.ppt .ph { border-color: var(--warm-fg); }
+.cs-prep { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 800; background: var(--surface-2); color: var(--text-sub); vertical-align: 1px; }
+.cs-prep.c18 { background: color-mix(in srgb, var(--blue) 14%, transparent); color: var(--blue); } .cs-prep.ppt { background: var(--warm-bg); color: var(--warm-fg); }
+.cs-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 5px; align-items: baseline; } .cs-tags .sn { font-size: 12px; color: var(--text-weak); }
+.cs-std { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px; white-space: nowrap; } .cs-std.ok { background: var(--success-bg); color: var(--success); }
+.cs-std.part { background: var(--warm-bg); color: var(--warm-fg); } .cs-std.need { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+.cs-dropped { margin-top: 8px; font-size: 12.5px; color: var(--text-weak); }
 .cs-acts { gap: 8px; } .cs-acts button:not(.ok) { height: 34px; padding: 0 14px; border-radius: 10px; background: var(--surface-2); box-shadow: 0 0 0 1px var(--line); font-weight: 700; font-size: 13px; color: var(--text-sub); }
 .cs-acts button[hidden] { display: none; }
 .cs-meta { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12.5px; color: var(--text-weak); } .cs-meta b { color: var(--text-sub); font-weight: 700; }
@@ -1378,6 +1390,7 @@ body.sys-mode .ws-combo { display: none; }
   <!-- 워크스페이스 › 의뢰 분석(법독성): 의뢰 내용·임상증상 → 검사할 약독물 우선순위 + 추출법·기기 제안(skills/forensic-tox) -->
   <section class="view on" id="casesView" role="tabpanel"><div class="wrap">
     <div class="evo-head"><span class="evo-lead">의뢰서 내용과 임상증상을 적으면 에이전트가 검사할 약독물의 우선순위를 정하고, 물질마다 추출법과 분석 기기를 제안해요. 실험 계획을 돕는 참고 자료이며 최종 판단은 감정 책임자가 합니다.</span></div>
+    <div class="card cs-lab" id="csLab"></div>
     <form class="card rqm-add cs-form" id="csForm" autocomplete="off">
       <div class="cs-file" id="csFileBar">
         <button type="button" class="cs-file-btn" id="csFileBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6M9 15l3-3 3 3"/></svg>의뢰서 파일로 채우기</button>
@@ -2426,6 +2439,25 @@ const CS_TYPES = {
 };
 const CS_SAMPLES = ['대퇴혈(말초혈)', '심장혈', '혈액', '소변', '위내용물', '유리체액', '간', '신장', '담즙', '모발', '폐·기도 가스', '압수물·증거물', '사료·미끼', '식물체', '토양', '물'];
 const CS_LEVEL = { high: '먼저', mid: '이어서', low: '감별' };
+const CS_PREP = { c18: 'C18 SPE', ppt: '제단백', other: '그 밖' };
+const CS_PREP_HEAD = { c18: 'C18 카트리지(SPE)로 분석', ppt: '제단백 — C18에 붙지 않는 극성·이온성 물질', other: '그 밖의 전처리', '': '전처리 미지정' };
+const CS_STD = { have: ['표준품 보유', 'ok'], partial: ['표준품 일부 없음', 'part'], need: ['표준품 확보 필요', 'need'] };
+const csLab = () => csCache.lab || { instruments: [], standards: [], methods: [], excluded: [] };
+// 검사 우선순위 — 전처리(C18 / 제단백 / 그 밖)로 나눠 보여 준다. 순위 번호는 전체 기준 그대로
+function csPriHtml(a) {
+  const row = (q) => `<li><div class="hd"><span class="rk">${q.rank}</span><span class="nm">${escapeHtml(q.name)}</span>${q.class ? `<span class="cl">${escapeHtml(q.class)}</span>` : ''}<span class="cs-lv ${q.level}">${CS_LEVEL[q.level] || ''}</span></div>
+    ${q.std || q.off ? `<div class="cs-tags">${q.std ? `<span class="cs-std ${CS_STD[q.std][1]}">${CS_STD[q.std][0]}</span>` : ''}${q.off ? '<span class="cs-std need">보유 기기 아님</span>' : ''}${q.stdNote ? `<span class="sn">${escapeHtml(q.stdNote)}</span>` : ''}</div>` : ''}
+    <dl class="cs-kv">${(q.extraction || q.instrument) ? `<dt>방법</dt><dd class="how">${escapeHtml([q.extraction, q.instrument].filter(Boolean).join(' → '))}</dd>` : ''}
+    ${q.method ? `<dt>검증 방법</dt><dd>${escapeHtml(q.method)}</dd>` : ''}
+    ${q.samples.length ? `<dt>시료</dt><dd>${escapeHtml(q.samples.join(', '))}</dd>` : ''}${q.targets ? `<dt>대상</dt><dd>${escapeHtml(q.targets)}</dd>` : ''}
+    ${q.window ? `<dt>검출 시간</dt><dd>${escapeHtml(q.window)}</dd>` : ''}${q.why ? `<dt>근거</dt><dd>${escapeHtml(q.why)}</dd>` : ''}</dl></li>`;
+  const need = a.priorities.filter((q) => q.std === 'need' || q.std === 'partial').length;
+  const head = `<h5>검사 우선순위${need ? ` <span class="cs-std need">표준품 확보 필요 ${need}종</span>` : ''}</h5>`;
+  if (!a.priorities.some((q) => q.prep)) return head + `<ol class="cs-pri">${a.priorities.map(row).join('')}</ol>`;
+  const top = (k) => Math.min(...a.priorities.filter((q) => (q.prep || '') === k).map((q) => q.rank), 1e9);   // 가장 급한 물질이 있는 묶음을 위로
+  return head + ['c18', 'ppt', 'other', ''].sort((x, y) => top(x) - top(y)).map((k) => { const qs = a.priorities.filter((q) => (q.prep || '') === k);
+    return qs.length ? `<div class="cs-prepgrp ${k || 'none'}"><div class="ph">${CS_PREP_HEAD[k]} <span>${qs.length}</span></div><ol class="cs-pri">${qs.map(row).join('')}</ol></div>` : ''; }).join('');
+}
 const csShort = (k) => (CS_TYPES[k] || CS_TYPES.other).label.split(' — ')[0] + (k === 'dfsa_victim' ? '·피해자' : k === 'dfsa_suspect' ? '·피의자' : '');   // 배지·필터용 짧은 이름
 let csCache = { items: [], job: null, extracts: [] }, csFilterKey = 'all', csEditing = 0, csAttach = null, csExtractId = 0, csPlanOpen = 0;
 $('csType').innerHTML = Object.entries(CS_TYPES).map(([k, v]) => `<option value="${k}">${escapeHtml(v.label)}</option>`).join('');
@@ -2453,7 +2485,34 @@ function csFill(c) {
   $('csSubmit').textContent = c ? '수정하고 다시 분석' : '등록하고 분석'; $('csSaveOnly').textContent = c ? '수정만' : '저장만';
   csTypeChanged();
 }
-async function refreshCases() { try { csCache = await getJSON('/api/cases'); } catch { return; } renderCases(); csExtractCheck(); }
+async function refreshCases() { try { csCache = await getJSON('/api/cases'); } catch { return; } renderCases(); renderLab(); csExtractCheck(); }
+// 실험실 정보 — 보유 기기·표준품·밸리데이션된 방법·하지 않는 검사. 분석은 이 안에서만 제안한다
+let csLabEdit = false;
+function renderLab() {
+  if (csLabEdit && $('csLab').querySelector('textarea')) return;   // 편집 중엔 다시 그리지 않는다
+  const L = csLab(), n = (k) => (L[k] || []).length;
+  if (!csLabEdit) {
+    const empty = !n('instruments') && !n('standards') && !n('methods');
+    $('csLab').innerHTML = `<div class="ana-top"><b>실험실 정보</b><span class="sub">${empty ? '아직 등록 전 — 등록하면 보유 기기 안에서만 제안하고, 표준품이 없는 물질을 표시해요' : `기기 ${n('instruments')} · 표준품 ${n('standards')} · 검증 방법 ${n('methods')}`}${n('excluded') ? ` · 하지 않는 검사: ${escapeHtml(L.excluded.join(', '))}` : ''}</span><span class="sp"></span><button type="button" data-l="edit">${empty ? '등록' : '보기·수정'}</button></div>`;
+    return;
+  }
+  const ta = (k, label, ph, rows) => `<label class="cs-f"><span>${label} <i>${n(k)}</i></span><textarea data-k="${k}" rows="${rows}" placeholder="${escapeHtml(ph)}">${escapeHtml((L[k] || []).join('\n'))}</textarea></label>`;
+  $('csLab').innerHTML = `<div class="ana-top"><b>실험실 정보</b><span class="sub">한 줄에 하나씩${L.at ? ` · 마지막 수정 ${escapeHtml(fmtWhen(L.at))}` : ''}</span></div>
+    <div class="cs-labgrid">${ta('instruments', '보유 기기', 'LC-MS/MS (Sciex 6500+)\nGC-MS/MS\nLC-QTOF\nGC-MS\nICP-MS', 6)}
+    ${ta('standards', '보유 표준품 (대사체 포함, 쉼표로도 구분)', '졸피뎀\nZPCA\n트리아졸람\nα-하이드록시트리아졸람\nGHB\nGHB-d6', 6)}
+    ${ta('methods', '밸리데이션된 방법', 'DFSA 진정제 패널(소변, C18 SPE, LC-MS/MS)\n농약 다성분(혈액, C18 SPE, GC-MS/MS)\nGHB(소변·혈액, 제단백, GC-MS)', 6)}
+    ${ta('excluded', '이 실험실에서 하지 않는 검사', '에탄올\n일산화탄소', 6)}</div>
+    <div class="rqm-add-acts cs-acts"><button type="button" data-l="cancel">취소</button><button type="button" class="ok" data-l="save">저장</button></div>`;
+}
+$('csLab').addEventListener('click', async (e) => {
+  const b = e.target.closest('button[data-l]'); if (!b) return;
+  if (b.dataset.l === 'edit') { csLabEdit = true; $('csLab').innerHTML = ''; renderLab(); return; }
+  if (b.dataset.l === 'cancel') { csLabEdit = false; renderLab(); return; }
+  const v = {}; $('csLab').querySelectorAll('textarea[data-k]').forEach((t) => { v[t.dataset.k] = t.value; });
+  const r = await post('/api/cases/lab', v).catch(() => null); const d = r ? await r.json().catch(() => ({})) : {};
+  if (!r || !r.ok) { showErr(d.error || '저장하지 못했어요'); return; }
+  csLabEdit = false; toast('실험실 정보를 저장했어요'); refreshCases();
+});
 
 /* 의뢰서 파일 → 입력칸: 올리기(/api/upload) → 읽기 작업(/api/cases/extract) → 에이전트가 값을 올리면 칸만 채운다(등록은 사람이) */
 const csKeep = (id) => { csExtractId = id; try { id ? localStorage.setItem('ana-cs-extract', String(id)) : localStorage.removeItem('ana-cs-extract'); } catch {} };
@@ -2607,14 +2666,12 @@ function renderCases() {
       <div class="cs-meta">${(x.samples || []).length ? `<span><b>시료</b> ${escapeHtml(x.samples.join(', '))}</span>` : ''}${x.elapsed ? `<span><b>경과</b> ${escapeHtml(x.elapsed)}</span>` : ''}${x.file ? `<span><b>의뢰서</b> <a href="/uploads/${encodeURIComponent(x.file.path.split(/[\\/]/).pop())}" target="_blank" rel="noopener">${escapeHtml(x.file.name)}</a></span>` : ''}<span>${escapeHtml(fmtWhen(x.at))}</span></div>
       ${src.length ? `<details class="cs-src"${a ? '' : ' open'}><summary>의뢰 내용</summary><dl>${src.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(v)}</dd>`).join('')}</dl></details>` : ''}
       ${a ? `<div class="rqm-an">${a.summary ? `<h5>요약</h5><p>${escapeHtml(a.summary)}</p>` : ''}
-        <h5>검사 우선순위</h5><ol class="cs-pri">${a.priorities.map((q) => `<li><div class="hd"><span class="rk">${q.rank}</span><span class="nm">${escapeHtml(q.name)}</span>${q.class ? `<span class="cl">${escapeHtml(q.class)}</span>` : ''}<span class="cs-lv ${q.level}">${CS_LEVEL[q.level] || ''}</span></div>
-          <dl class="cs-kv">${(q.extraction || q.instrument) ? `<dt>방법</dt><dd class="how">${escapeHtml([q.extraction, q.instrument].filter(Boolean).join(' → '))}</dd>` : ''}
-          ${q.samples.length ? `<dt>시료</dt><dd>${escapeHtml(q.samples.join(', '))}</dd>` : ''}${q.targets ? `<dt>대상</dt><dd>${escapeHtml(q.targets)}</dd>` : ''}
-          ${q.window ? `<dt>검출 시간</dt><dd>${escapeHtml(q.window)}</dd>` : ''}${q.why ? `<dt>근거</dt><dd>${escapeHtml(q.why)}</dd>` : ''}</dl></li>`).join('')}</ol>
-        ${(a.batches || []).length ? `<h5>실험 배치 (같은 추출·기기로 묶음)</h5><div class="cs-batch">${a.batches.map((b) => `<div><b>${escapeHtml(b.name || '배치')}</b><div class="flow">${escapeHtml([b.sample, b.extraction, b.instrument].filter(Boolean).join(' → '))}</div>${b.items.length ? `<div class="its">${escapeHtml(b.items.join(', '))}</div>` : ''}</div>`).join('')}</div>` : ''}
+        ${csPriHtml(a)}
+        ${(a.batches || []).length ? `<h5>실험 배치 (같은 전처리·기기로 묶음)</h5><div class="cs-batch">${a.batches.map((b) => `<div><b>${b.prep ? `<span class="cs-prep ${b.prep}">${CS_PREP[b.prep]}</span>` : ''}${escapeHtml(b.name || '배치')}</b><div class="flow">${escapeHtml([b.sample, b.extraction, b.instrument].filter(Boolean).join(' → '))}</div>${b.items.length ? `<div class="its">${escapeHtml(b.items.join(', '))}</div>` : ''}</div>`).join('')}</div>` : ''}
+        ${(a.dropped || []).length ? `<div class="cs-dropped">실험실에서 하지 않는 검사라 뺐어요: ${escapeHtml(a.dropped.join(', '))}</div>` : ''}
         ${(a.cautions || []).length ? `<h5>주의사항</h5>${ul(a.cautions)}` : ''}
         ${(a.questions || []).length ? `<h5>의뢰처에 더 확인할 것</h5>${ul(a.questions)}` : ''}
-        <div class="meta">분석 ${escapeHtml(fmtWhen(a.at))} · 참고용 — 최종 판단은 감정 책임자${a.stale ? ' · <span class="stale">의뢰 내용이 바뀌었어요 — 다시 분석하세요</span>' : ''}</div></div>` : ''}
+        <div class="meta">분석 ${escapeHtml(fmtWhen(a.at))} · 참고용 — 최종 판단은 감정 책임자${a.stale ? ' · <span class="stale">의뢰 내용이 바뀌었어요 — 다시 분석하세요</span>' : ''}${csLab().at && csLab().at > (a.labAt || '') ? ' · <span class="stale">실험실 정보가 바뀌었어요 — 다시 분석하면 반영돼요</span>' : ''}</div></div>` : ''}
       ${csPlanHtml(x)}
       <div class="rqm-acts"><button data-a="one"${mine ? ' disabled' : ''}>${mine ? '분석 중…' : a ? '다시 분석' : '분석'}</button>${a && (a.batches || []).length && !x.plan && csPlanOpen !== x.id ? '<button data-a="plan">할일·일정 만들기</button>' : ''}<button data-a="talk">상담</button><button data-a="edit">수정</button><button data-a="del">삭제</button></div></div>`;
   }).join('');
@@ -2661,6 +2718,7 @@ async function analyzeCase(id) {
 2) 진행 보고(0–99): curl -s -X POST "http://${h}/api/cases/progress?ws=${ws}" -H 'content-type: application/json' -d '{"job":${job},"progress":40,"step":"증상으로 계열 좁히는 중"}'
 3) 결과 올리기: curl -s -X POST "http://${h}/api/cases/result?ws=${ws}" -H 'content-type: application/json' --data-binary @result.json
    result.json = {"job":${job},${many ? '"case":<의뢰 id>,' : ''}"summary":"2~4문장","priorities":[{"rank":1,"name":"물질","class":"계열","level":"high|mid|low","why":"증상·정황·시간 근거","samples":["소변"],"targets":"모체 + 대사체","extraction":"전처리·추출","instrument":"기기","window":"검출 가능 시간"}],"batches":[{"name":"배치 A — …","sample":"소변","extraction":"…","instrument":"…","items":["…"]}],"cautions":["…"],"questions":["의뢰처에 더 확인할 정보"]}
+   priorities와 batches에 "prep":"c18|ppt|other"(지침 5장 — C18 카트리지 / 제단백 / 그 밖)를 꼭 넣고, 한 배치에 서로 다른 prep을 섞지 마세요. 응답의 lab이 있으면 lab.instruments 안의 기기로만 제안하고, 물질마다 "std":"have|partial|need"(대사체까지), "stdNote", 맞는 lab.methods가 있으면 "method"를 넣으세요. lab.excluded(기본: 에탄올·일산화탄소)는 이 실험실에서 하지 않으니 넣지 마세요.
    모든 텍스트는 한국어로 쓰세요. 분석하는 동안 아무것도 바꾸지 마세요. 끝내지 못하면: curl -s -X POST "http://${h}/api/cases/fail?ws=${ws}" -H 'content-type: application/json' -d '{"job":${job},"reason":"이유"}'`;
   post('/api/chat', { text, force: true }).then((x) => { if (!x.ok) x.json().then((e) => showErr(e.error || '에이전트에게 보내지 못했어요')).catch(() => {}); }).catch(() => showErr('에이전트에게 보내지 못했어요'));
 }
